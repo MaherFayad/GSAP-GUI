@@ -1,0 +1,23 @@
+#root {
+  margin: 0 auto;
+  padding: var(--space-16) var(--space-8);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.card {
+  background-color: var(--gray-900);
+  border-radius: var(--radius-large);
+  border: 1px solid var(--gray-800);
+  padding: var(--space-4);
+  margin: var(--space-8);
+}
+
+
+.button-group {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-8);
+}

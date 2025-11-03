@@ -1,0 +1,54 @@
+button {
+    border-radius: var(--radius-full);
+    border: none;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: var(--fw-medium);
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Primary button - Framer "Start for free" style */
+.button-primary {
+    background: #FFFFFF;
+    color: #000000;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.button-primary:hover {
+    background: #F0F0F0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+}
+
+.button-primary:active {
+    transform: translateY(0);
+    background: #E0E0E0;
+}
+
+.button-primary:focus,
+.button-primary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* Secondary button variant - Framer "Start with AI" style */
+.button-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.button-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.button-secondary:active {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(0);
+}

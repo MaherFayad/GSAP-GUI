@@ -1,0 +1,97 @@
+# GSAP GUI Editor - Cursor Configuration
+
+## Supabase MCP Server Setup
+
+To connect to the Supabase MCP server in Cursor:
+
+### Step 1: Get Your Supabase Credentials
+
+1. Go to https://app.supabase.com
+2. Select your project
+3. Go to Settings > API
+4. Copy the "Project URL" and "anon public" key
+
+### Step 2: Configure MCP in Cursor
+
+1. Open Cursor Settings (Ctrl+, or Cmd+,)
+2. Click on "Features" in the left sidebar
+3. Scroll to "Model Context Protocol" section
+4. Click "Edit Config" or open the config file directly
+
+**Windows:** `%APPDATA%\Cursor\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
+**Mac:** `~/Library/Application Support/Cursor/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+**Linux:** `~/.config/Cursor/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+
+5. Add this configuration (replace with your actual credentials):
+
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-supabase",
+        "--project-url",
+        "https://your-project-id.supabase.co",
+        "--anon-key",
+        "your-actual-anon-key-here"
+      ]
+    }
+  }
+}
+```
+
+⚠️ **Security Note:** The MCP config file is local to your machine and not committed to git. It's safe to put credentials here.
+
+### Alternative: Use Environment Variables (Advanced)
+
+If you prefer using environment variables, set them in your system environment:
+
+**Windows PowerShell:**
+```powershell
+[System.Environment]::SetEnvironmentVariable('SUPABASE_URL', 'https://your-project.supabase.co', 'User')
+[System.Environment]::SetEnvironmentVariable('SUPABASE_ANON_KEY', 'your-anon-key', 'User')
+```
+
+**Mac/Linux:**
+```bash
+# Add to ~/.bashrc, ~/.zshrc, or ~/.profile
+export SUPABASE_URL="https://your-project.supabase.co"
+export SUPABASE_ANON_KEY="your-anon-key"
+```
+
+Then use this config:
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-supabase",
+        "--project-url",
+        "$SUPABASE_URL",
+        "--anon-key",
+        "$SUPABASE_ANON_KEY"
+      ]
+    }
+  }
+}
+```
+
+### Step 3: Restart Cursor
+
+Close and reopen Cursor completely for the changes to take effect.
+
+## Project Environment Variables
+
+For your Vite application, also create a `.env` file in the project root:
+
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+These are separate from the MCP configuration and are used by your application code.
+

@@ -14,5 +14,8 @@ export const clamp = (value: number, min: number, max: number): number => {
   return Math.min(Math.max(value, min), max);
 };
 
+// Export Supabase client
+export { supabase } from './supabaseClient';
+
 // Add more utility functions as needed
 

@@ -102,6 +102,11 @@ cd gsap-editor
 
 # Install dependencies
 npm install
+
+# Set up Supabase (optional, but recommended)
+# See SUPABASE_QUICKSTART.md for detailed instructions
+cp env.template .env
+# Then edit .env with your Supabase credentials
 ```
 
 ### Development
@@ -123,6 +128,24 @@ npm run build
 npm run preview
 ```
 
+### Testing
+
+```bash
+# Run integration tests
+npm test
+
+# Run tests once (CI mode)
+npm run test:run
+
+# Run tests with UI
+npm run test:ui
+```
+
+**Setup for tests:**
+1. Copy `env.test.template` to `.env.test`
+2. Add your Supabase credentials (including service role key)
+3. See `supabase/tests/README.md` for detailed testing documentation
+
 ---
 
 ## 🛠️ Tech Stack
@@ -137,6 +160,7 @@ npm run preview
 | **Visual Workflows** | ReactFlow 11 |
 | **Backend** | Supabase |
 | **Routing** | React Router 7 |
+| **Testing** | Vitest |
 | **Code Quality** | ESLint, TypeScript Compiler |
 
 </div>
@@ -253,6 +277,23 @@ function MyComponent() {
 ---
 
 ## 🔧 Configuration
+
+### Supabase Setup
+
+This project includes Supabase integration for backend functionality. To set it up:
+
+1. **Quick Start:** Follow [SUPABASE_QUICKSTART.md](./SUPABASE_QUICKSTART.md) (5 minutes)
+2. **Detailed Guide:** See [MCP_SETUP.md](./MCP_SETUP.md) for full documentation
+
+**TL;DR:**
+```bash
+# 1. Create .env file from template
+cp env.template .env
+
+# 2. Add your Supabase credentials to .env
+# 3. Configure MCP in Cursor (see SUPABASE_QUICKSTART.md)
+# 4. Restart Cursor
+```
 
 ### ESLint
 

@@ -11,7 +11,151 @@
 
 *Create stunning, professional-grade animations with an intuitive visual interface powered by GSAP*
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Tech Stack](#-tech-stack) • [Documentation](#-documentation)
+[Features](#-features) • [Architecture](#-architecture) • [Quick Start](#-quick-start) • [Tech Stack](#-tech-stack) • [Documentation](#-documentation)
+
+</div>
+
+---
+
+## 🏗️ Architecture
+
+### The Dual-Client System
+
+<div align="center">
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│                      🖥️  GSAP GUI EDITOR                             │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+</div>
+
+The GSAP GUI Editor operates as a sophisticated **three-layer architecture** that maintains security while providing a seamless animation editing experience:
+
+<table>
+<tr>
+<td width="33%" align="center">
+
+### 🎛️ **Client 1: The Editor**
+*The Platform*
+
+The sophisticated SPA that users interact with directly
+
+</td>
+<td width="33%" align="center">
+
+### 📦 **Client 2: The Sandbox**
+*The User's Code*
+
+A sandboxed `<iframe>` running untrusted user code
+
+</td>
+<td width="33%" align="center">
+
+### 🤖 **Client 3: Sandbox Client**
+*The Agent*
+
+Lightweight JS injected into the sandbox to control animations
+
+</td>
+</tr>
+</table>
+
+<br>
+
+<div align="center">
+
+```mermaid
+graph TB
+    subgraph Editor["🎛️ Editor Platform (Client 1)"]
+        UI[Visual UI & Timeline]
+        StateMachine[State Machine Graph]
+        Properties[Properties Panel]
+        Dashboard[Project Dashboard]
+    end
+    
+    subgraph Sandbox["📦 Sandbox iframe (Client 2)"]
+        UserCode[User's HTML/CSS/JS]
+        UserDOM[User's DOM Elements]
+    end
+    
+    subgraph Agent["🤖 Sandbox Client (Client 3)"]
+        Injected[sandbox-client.js]
+        GSAP[GSAP Library]
+        Executor[Animation Executor]
+    end
+    
+    Editor -->|PostMessage API| Sandbox
+    Editor -.->|Injects| Agent
+    Agent -->|Manipulates| UserDOM
+    Agent -->|Executes on| UserCode
+    
+    style Editor fill:#0055FF,stroke:#FFFFFF,stroke-width:2px,color:#FFFFFF
+    style Sandbox fill:#8800FF,stroke:#FFFFFF,stroke-width:2px,color:#FFFFFF
+    style Agent fill:#FF00FF,stroke:#FFFFFF,stroke-width:2px,color:#FFFFFF
+```
+
+</div>
+
+<br>
+
+#### 🔐 **Security Through Isolation**
+
+<table>
+<tr>
+<td width="50%">
+
+**The Problem**
+- Users upload untrusted HTML/CSS/JS code
+- Need to preview and animate their code
+- Can't let untrusted code access platform internals
+- Must prevent XSS and other attacks
+
+</td>
+<td width="50%">
+
+**The Solution**
+- Sandbox runs in isolated `<iframe>`
+- PostMessage API for controlled communication
+- GSAP injected only when needed
+- Platform code never exposed to user code
+
+</td>
+</tr>
+</table>
+
+#### 🔄 **How It Works**
+
+```typescript
+// 1️⃣ User uploads their code
+const userCode = `<div class="box">Hello World</div>`;
+
+// 2️⃣ Platform loads it in sandboxed iframe
+sandbox.src = createBlobURL(userCode);
+
+// 3️⃣ Platform injects sandbox-client.js
+injectScript('sandbox-client.js');
+
+// 4️⃣ User creates animation in timeline
+timeline.to('.box', { x: 100, duration: 1 });
+
+// 5️⃣ Platform sends command via PostMessage
+window.postMessage({
+  type: 'ANIMATE',
+  target: '.box',
+  properties: { x: 100, duration: 1 }
+}, '*');
+
+// 6️⃣ Sandbox client executes GSAP animation
+gsap.to('.box', { x: 100, duration: 1 });
+```
+
+<div align="center">
+
+**🎯 Result: Secure, isolated animation editing with zero platform exposure**
 
 </div>
 
@@ -26,8 +170,9 @@
 ### 🎨 **Modern Design System**
 - Custom CSS variables & tokens
 - 8px grid-based spacing
-- Comprehensive color palette
+- Dark theme optimized for long sessions
 - Inter font typography system
+- Glassmorphic UI elements
 
 </td>
 <td width="50%">
@@ -37,6 +182,7 @@
 - Hot Module Replacement (HMR)
 - Optimized production builds
 - Sub-second page loads
+- Lazy loading & code splitting
 
 </td>
 </tr>
@@ -46,8 +192,9 @@
 ### 🎭 **Professional Animations**
 - GSAP 3.13 integration
 - Timeline-based editing
+- Keyframe management
 - Custom animation hooks
-- Real-time preview
+- Real-time preview in sandbox
 
 </td>
 <td width="50%">
@@ -57,26 +204,29 @@
 - Predictable state flows
 - Visual workflow editor
 - ReactFlow node system
+- Time-travel debugging
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-### 🌐 **Full-Stack Ready**
-- Supabase backend integration
-- Authentication support
-- Real-time database
-- Cloud storage
+### 🔐 **Secure Sandbox**
+- Isolated iframe execution
+- PostMessage communication
+- CSP-compliant architecture
+- No direct code access
+- XSS protection
 
 </td>
 <td width="50%">
 
-### 🛣️ **Modern Routing**
-- React Router v7
-- Client-side navigation
-- Nested routes
-- Lazy loading support
+### 🌐 **Full-Stack Ready**
+- Supabase backend integration
+- Row-level security (RLS)
+- Real-time database sync
+- Authentication & authorization
+- Cloud storage for projects
 
 </td>
 </tr>
@@ -88,63 +238,62 @@
 
 ### Prerequisites
 
-- **Node.js** 18+ 
-- **npm** or **yarn** or **pnpm**
+```bash
+Node.js 18+  ✓
+npm/yarn/pnpm  ✓
+```
 
 ### Installation
 
 ```bash
-# Clone the repository
+# 1️⃣ Clone the repository
 git clone https://github.com/yourusername/GSAP-GUI.git
-
-# Navigate to the project
 cd gsap-editor
 
-# Install dependencies
+# 2️⃣ Install dependencies
 npm install
 
-# Set up Supabase (optional, but recommended)
-# See SUPABASE_QUICKSTART.md for detailed instructions
+# 3️⃣ Set up environment (optional but recommended)
 cp env.template .env
-# Then edit .env with your Supabase credentials
+# Edit .env with your Supabase credentials
 ```
 
 ### Development
 
 ```bash
-# Start the development server
+# Start the dev server with HMR
 npm run dev
 
-# Open your browser to http://localhost:5173
+# 🌐 Open http://localhost:5173
 ```
 
 ### Build for Production
 
 ```bash
-# Create an optimized production build
+# Create optimized build
 npm run build
 
-# Preview the production build locally
+# Preview production build
 npm run preview
 ```
 
 ### Testing
 
 ```bash
-# Run integration tests
+# Run all tests
 npm test
 
-# Run tests once (CI mode)
+# Run tests in CI mode
 npm run test:run
 
-# Run tests with UI
+# Run with UI
 npm run test:ui
 ```
 
-**Setup for tests:**
-1. Copy `env.test.template` to `.env.test`
-2. Add your Supabase credentials (including service role key)
-3. See `supabase/tests/README.md` for detailed testing documentation
+**Test Setup:**
+1. Copy `env.test.template` → `.env.test`
+2. Add Supabase credentials (including service role key)
+3. See `supabase/tests/README.md` for details
 
 ---
 
@@ -152,16 +301,17 @@ npm run test:ui
 
 <div align="center">
 
-| Category | Technologies |
-|----------|-------------|
-| **Frontend** | React 19, TypeScript, Vite |
-| **Animations** | GSAP 3.13 |
-| **State Management** | XState 5, @xstate/react |
-| **Visual Workflows** | ReactFlow 11 |
-| **Backend** | Supabase |
-| **Routing** | React Router 7 |
-| **Testing** | Vitest |
-| **Code Quality** | ESLint, TypeScript Compiler |
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 19 + TypeScript | Type-safe UI components |
+| **Build Tool** | Vite 7 | Lightning-fast dev experience |
+| **Animations** | GSAP 3.13 | Professional animation engine |
+| **State** | XState 5 | Predictable state machines |
+| **Workflows** | ReactFlow 11 | Visual node editor |
+| **Backend** | Supabase | Auth, database, storage |
+| **Routing** | React Router 7 | Client-side navigation |
+| **Testing** | Vitest + Testing Library | Unit & integration tests |
+| **Code Quality** | ESLint + TypeScript | Linting & type checking |
 
 </div>
 
@@ -170,6 +320,7 @@ npm run test:ui
 ```json
 {
   "react": "^19.1.1",
+  "react-dom": "^19.1.1",
   "gsap": "^3.13.0",
   "xstate": "^5.24.0",
   "@xstate/react": "^6.0.0",
@@ -185,65 +336,141 @@ npm run test:ui
 
 ```
 gsap-editor/
-├── src/
-│   ├── components/          # Reusable React components
-│   │   ├── Button/
-│   │   │   ├── Button.tsx
-│   │   │   └── Style.css
-│   │   └── index.ts
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useGSAPAnimation.ts
-│   │   └── index.ts
-│   ├── styles/             # Global styles & themes
-│   │   └── App.css
-│   ├── types/              # TypeScript definitions
-│   │   └── index.ts
-│   ├── utils/              # Helper functions
-│   │   └── index.ts
-│   ├── assets/             # Static assets
-│   ├── App.tsx             # Main App component
-│   ├── main.tsx            # Application entry
-│   └── index.css           # Design system tokens
-├── public/                 # Static files
-├── dist/                   # Production build
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── eslint.config.js
+├── 📱 src/
+│   ├── 🧩 components/          # Reusable React components
+│   │   ├── Button/             # Primary/secondary button styles
+│   │   ├── Sandbox/            # Isolated iframe component
+│   │   ├── HighlightOverlay/   # Visual element highlighting
+│   │   ├── InspectorOverlay/   # DOM inspector UI
+│   │   └── ProtectedRoute.tsx  # Auth guard component
+│   │
+│   ├── 🪝 hooks/               # Custom React hooks
+│   │   ├── useGSAPAnimation.ts # GSAP animation manager
+│   │   └── usePostMessage.ts   # Sandbox communication
+│   │
+│   ├── 📄 pages/               # Route pages
+│   │   ├── EditorPage.tsx      # Main editor interface
+│   │   ├── LoginPage.tsx       # Authentication page
+│   │   └── TestPage.tsx        # Development testing page
+│   │
+│   ├── 🎨 styles/              # Global styles
+│   │   ├── index.css           # Design system tokens
+│   │   └── App.css             # App-specific styles
+│   │
+│   ├── 🔧 utils/               # Helper functions
+│   │   ├── supabaseClient.ts   # Supabase SDK setup
+│   │   └── index.ts            # Utility exports
+│   │
+│   ├── 📝 types/               # TypeScript definitions
+│   │   └── index.ts            # Shared type definitions
+│   │
+│   └── 🌐 contexts/            # React contexts
+│       └── AuthContext.tsx     # Authentication state
+│
+├── 🔒 public/
+│   └── sandbox-client.js       # Injected sandbox agent
+│
+├── 🗄️ supabase/
+│   ├── migrations/             # Database migrations
+│   └── tests/                  # Supabase RLS tests
+│
+├── ⚙️ Configuration Files
+│   ├── vite.config.ts          # Vite configuration
+│   ├── vitest.config.ts        # Test configuration
+│   ├── tsconfig.json           # TypeScript config
+│   └── eslint.config.js        # Linting rules
+│
+└── 📚 Documentation
+    ├── README.md               # This file
+    ├── MCP_SETUP.md            # MCP server setup guide
+    ├── SUPABASE_QUICKSTART.md  # Quick Supabase setup
+    └── TESTING_SETUP.md        # Testing documentation
 ```
 
 ---
 
 ## 🎨 Design System
 
-The project features a comprehensive design system built with CSS custom properties:
+Our design system is built with modern CSS custom properties, optimized for dark interfaces and long editing sessions.
 
-### Color Palette
+### 🎨 Color Palette
 
+<table>
+<tr>
+<td width="25%">
+
+**Primary**
 ```css
---primary-50 to --primary-900     /* Blue scale */
---accent-pink, --accent-purple    /* Accent colors */
---neutral-0 to --neutral-900      /* Grayscale */
+--blue: #0055FF
+--black: #000000
+--white: #FFFFFF
 ```
 
-### Typography
+</td>
+<td width="25%">
 
-- **Font Family**: Inter (Google Fonts)
-- **Heading Classes**: `.heading-1` through `.heading-5`
-- **Text Classes**: `.text-xl` through `.text-xs`
+**Accents**
+```css
+--pink: #FF00FF
+--purple: #8800FF
+--green: #00CC99
+```
 
-### Spacing System
+</td>
+<td width="50%">
 
-8px grid-based spacing: `--space-1` (8px) through `--space-24` (192px)
+**Grays**
+```css
+--gray-100: #F5F5F5  /* Lightest */
+--gray-300: #DDDDDD  /* Borders */
+--gray-500: #A6A6A6  /* Icons */
+--gray-600: #808080  /* Secondary text */
+--gray-800: #333333  /* Primary text */
+--gray-900: #1A1A1A  /* Darkest */
+```
 
-### Border Radius
+</td>
+</tr>
+</table>
 
-- `--radius-sm`: 4px
-- `--radius-md`: 8px
-- `--radius-lg`: 12px
-- `--radius-full`: 9999px
+### 📝 Typography
 
-> All design tokens are available in `src/index.css`
+```css
+/* Headings */
+.h1, h1 { font-size: 4rem; font-weight: 700; letter-spacing: -0.03em; }
+.h2, h2 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.015em; }
+.h3, h3 { font-size: 1.5rem; font-weight: 600; }
+.h4, h4 { font-size: 1.125rem; font-weight: 600; }
+
+/* Body Text */
+.text-large { font-size: 1.25rem; line-height: 1.6; }
+.text-body, p { font-size: 1.0625rem; line-height: 1.6; }
+.text-small { font-size: 0.875rem; line-height: 1.4; }
+.text-caption { font-size: 0.75rem; line-height: 1.3; }
+```
+
+### 📐 Spacing System
+
+8px grid-based spacing for consistent layouts:
+
+```css
+--space-1: 4px    --space-6: 24px   --space-16: 64px
+--space-2: 8px    --space-8: 32px   --space-20: 80px
+--space-3: 12px   --space-10: 40px  --space-24: 96px
+--space-4: 16px   --space-12: 48px
+--space-5: 20px
+```
+
+### 🔘 Border Radius
+
+```css
+--radius-small: 4px    /* Subtle corners */
+--radius-medium: 8px   /* Cards, inputs */
+--radius-large: 12px   /* Panels, modals */
+--radius-full: 9999px  /* Buttons, pills */
+```
+
+> 💡 All design tokens are defined in `src/index.css`
 
 ---
 
@@ -253,26 +480,76 @@ The project features a comprehensive design system built with CSS custom propert
 
 #### `useGSAPAnimation`
 
-A custom hook for managing GSAP animations in React:
+Manage GSAP animations with React lifecycle:
 
 ```typescript
 import { useGSAPAnimation } from './hooks';
 
-function MyComponent() {
-  const { animate, timeline } = useGSAPAnimation();
+function AnimatedComponent() {
+  const { animate, timeline, kill } = useGSAPAnimation();
   
-  // Use GSAP animations with React
+  const handleClick = () => {
+    animate('.box', {
+      x: 100,
+      rotation: 360,
+      duration: 1
+    });
+  };
+  
+  return <button onClick={handleClick}>Animate</button>;
 }
 ```
 
-### Scripts
+#### `usePostMessage`
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with HMR |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Run ESLint |
+Communicate with the sandbox iframe:
+
+```typescript
+import { usePostMessage } from './hooks';
+
+function Editor() {
+  const { sendMessage, addListener } = usePostMessage(iframeRef);
+  
+  // Send animation command to sandbox
+  sendMessage({
+    type: 'ANIMATE',
+    target: '.element',
+    properties: { x: 100 }
+  });
+  
+  // Listen for responses
+  addListener('ANIMATION_COMPLETE', (data) => {
+    console.log('Animation finished', data);
+  });
+}
+```
+
+### Components
+
+#### `<Sandbox />`
+
+Isolated iframe component for running user code:
+
+```typescript
+<Sandbox
+  html={userHTML}
+  css={userCSS}
+  js={userJS}
+  onLoad={handleLoad}
+  onMessage={handleMessage}
+/>
+```
+
+#### `<HighlightOverlay />`
+
+Visual overlay for highlighting DOM elements:
+
+```typescript
+<HighlightOverlay
+  target={selectedElement}
+  color="rgba(0, 85, 255, 0.3)"
+/>
+```
 
 ---
 
@@ -280,78 +557,191 @@ function MyComponent() {
 
 ### Supabase Setup
 
-This project includes Supabase integration for backend functionality. To set it up:
+This project uses Supabase for backend services:
 
-1. **Quick Start:** Follow [SUPABASE_QUICKSTART.md](./SUPABASE_QUICKSTART.md) (5 minutes)
-2. **Detailed Guide:** See [MCP_SETUP.md](./MCP_SETUP.md) for full documentation
+<table>
+<tr>
+<td width="50%">
 
-**TL;DR:**
+**Quick Start** (5 minutes)
+1. Create account at [supabase.com](https://supabase.com)
+2. Create new project
+3. Copy URL and anon key
+4. Create `.env` from `env.template`
+5. Paste credentials
+
+</td>
+<td width="50%">
+
+**Detailed Setup**
+- 📖 [SUPABASE_QUICKSTART.md](./SUPABASE_QUICKSTART.md)
+- 🔧 [MCP_SETUP.md](./MCP_SETUP.md)
+- 🧪 [TESTING_SETUP.md](./TESTING_SETUP.md)
+
+</td>
+</tr>
+</table>
+
 ```bash
-# 1. Create .env file from template
+# Quick setup
 cp env.template .env
+# Edit .env with your credentials
 
-# 2. Add your Supabase credentials to .env
-# 3. Configure MCP in Cursor (see SUPABASE_QUICKSTART.md)
-# 4. Restart Cursor
+# For testing
+cp env.test.template .env.test
+# Add service role key for RLS tests
 ```
 
-### ESLint
+### Available Scripts
 
-For production applications, enable type-aware lint rules:
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server with HMR at http://localhost:5173 |
+| `npm run build` | Build optimized production bundle |
+| `npm run preview` | Preview production build locally |
+| `npm test` | Run tests in watch mode |
+| `npm run test:run` | Run tests once (CI mode) |
+| `npm run test:ui` | Open Vitest UI for debugging |
+| `npm run lint` | Run ESLint on codebase |
 
-<details>
-<summary>Click to expand ESLint configuration</summary>
+---
 
-```js
-import tseslint from 'typescript-eslint';
+## 🧪 Testing
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      tseslint.configs.recommendedTypeChecked,
-      // or tseslint.configs.strictTypeChecked for stricter rules
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-]);
+We use **Vitest** + **React Testing Library** for comprehensive testing:
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test file
+npm test -- editor-workflow
+
+# Run with coverage
+npm test -- --coverage
+
+# Open test UI
+npm run test:ui
 ```
 
-</details>
+### Test Structure
 
-### React Compiler
-
-The React Compiler is not enabled by default. See [React Compiler Installation](https://react.dev/learn/react-compiler/installation) for setup instructions.
+```
+src/__tests__/
+├── integration/
+│   ├── editor-workflow.test.tsx    # Full user workflows
+│   └── sandbox-communication.test.ts # PostMessage tests
+│
+└── components/
+    ├── Sandbox.test.tsx
+    ├── HighlightOverlay.test.tsx
+    └── InspectorOverlay.test.tsx
+```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+We welcome contributions! Here's how to get started:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork** the repository
+2. **Clone** your fork: `git clone https://github.com/your-username/GSAP-GUI.git`
+3. **Create** a branch: `git checkout -b feature/amazing-feature`
+4. **Make** your changes
+5. **Test** your changes: `npm test`
+6. **Commit**: `git commit -m 'Add amazing feature'`
+7. **Push**: `git push origin feature/amazing-feature`
+8. **Open** a Pull Request
+
+### Development Guidelines
+
+- ✅ Write tests for new features
+- ✅ Follow existing code style
+- ✅ Update documentation
+- ✅ Keep commits atomic and descriptive
+- ✅ Ensure all tests pass before PR
 
 ---
 
+## 🔒 Security
+
+### Reporting Vulnerabilities
+
+If you discover a security vulnerability, please email us at security@gsapgui.dev instead of opening a public issue.
+
+### Security Features
+
+- 🔐 **Sandbox Isolation**: User code runs in isolated iframe
+- 🔐 **CSP Headers**: Content Security Policy prevents XSS
+- 🔐 **RLS Policies**: Row-level security in Supabase
+- 🔐 **Input Validation**: All user input is sanitized
+- 🔐 **PostMessage Origin Checks**: Strict origin validation
+
+---
+
+## 📈 Roadmap
+
+- [ ] **Timeline Editor**: Visual GSAP timeline editing
+- [ ] **Keyframe Inspector**: Frame-by-frame animation control
+- [ ] **State Machine Graph**: Visual XState editor
+- [ ] **Export Animations**: Export as code or video
+- [ ] **Collaboration**: Real-time multi-user editing
+- [ ] **Templates**: Pre-built animation templates
+- [ ] **Plugin System**: Extend with custom plugins
+- [ ] **Cloud Sync**: Save projects to Supabase
+- [ ] **Version Control**: Track animation changes
+
+---
 
 ## 🙏 Acknowledgments
 
-- [GSAP](https://gsap.com/) - Professional animation library
-- [React](https://react.dev/) - UI library
-- [XState](https://xstate.js.org/) - State management
-- [ReactFlow](https://reactflow.dev/) - Node-based UI
-- [Supabase](https://supabase.com/) - Backend platform
-- [Vite](https://vitejs.dev/) - Build tool
+Built with amazing open-source tools:
+
+<table>
+<tr>
+<td align="center" width="20%">
+<img src="https://raw.githubusercontent.com/greensock/GSAP/master/src/gsap-core.js" width="50" height="50" alt="GSAP"/>
+<br>
+<strong>GSAP</strong>
+<br>
+Professional animations
+</td>
+<td align="center" width="20%">
+<img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" width="50" height="50" alt="React"/>
+<br>
+<strong>React</strong>
+<br>
+UI library
+</td>
+<td align="center" width="20%">
+<img src="https://xstate.js.org/assets/xstate_logo_light.svg" width="50" height="50" alt="XState"/>
+<br>
+<strong>XState</strong>
+<br>
+State machines
+</td>
+<td align="center" width="20%">
+<img src="https://supabase.com/brand-assets/supabase-logo-icon.svg" width="50" height="50" alt="Supabase"/>
+<br>
+<strong>Supabase</strong>
+<br>
+Backend platform
+</td>
+<td align="center" width="20%">
+<img src="https://vitejs.dev/logo.svg" width="50" height="50" alt="Vite"/>
+<br>
+<strong>Vite</strong>
+<br>
+Build tool
+</td>
+</tr>
+</table>
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -359,6 +749,8 @@ Contributions are welcome! Please follow these steps:
 
 ### ⭐ Star this repo if you find it helpful!
 
-**Made with ❤️ by the GSAP GUI Team**
+**Built with ❤️ by the GSAP GUI Team**
+
+[Report Bug](https://github.com/yourusername/GSAP-GUI/issues) • [Request Feature](https://github.com/yourusername/GSAP-GUI/issues) • [Documentation](https://github.com/yourusername/GSAP-GUI/wiki)
 
 </div>

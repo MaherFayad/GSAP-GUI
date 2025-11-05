@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createRef } from 'react';
 import { usePostMessage } from '../usePostMessage';
 
 describe('usePostMessage Hook', () => {
@@ -50,7 +49,7 @@ describe('usePostMessage Hook', () => {
   });
 
   it('should not crash when iframeRef.current is null', () => {
-    const nullRef = { current: null };
+    const nullRef = { current: null! };
     const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     
     const { result } = renderHook(() => usePostMessage(nullRef));

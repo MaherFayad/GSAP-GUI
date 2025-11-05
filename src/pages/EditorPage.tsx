@@ -10,7 +10,7 @@ interface HighlightBox {
 }
 
 export const EditorPage = () => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null!);
   const [isSandboxReady, setIsSandboxReady] = useState(false);
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
   const [isInspectorActive, setIsInspectorActive] = useState(true); // Inspector active by default
@@ -27,6 +27,13 @@ export const EditorPage = () => {
       sendMessage('HANDSHAKE_PING');
     }, 100);
   };
+  
+  // Send inspector mode state to sandbox whenever it changes
+  useEffect(() => {
+    if (isSandboxReady) {
+      sendMessage('SET_INSPECTOR_MODE', { enabled: isInspectorActive });
+    }
+  }, [isInspectorActive, isSandboxReady, sendMessage]);
 
   // Listen for messages from sandbox
   useEffect(() => {

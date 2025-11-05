@@ -1,4 +1,4 @@
-import { useCallback, RefObject } from 'react';
+import { useCallback, type RefObject } from 'react';
 
 /**
  * Custom hook for sending messages to an iframe via postMessage API

@@ -1,6 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
-import { usePostMessage } from '../../hooks/usePostMessage';
+import { describe, it, expect } from 'vitest';
 
 /**
  * Integration tests for the complete editor workflow

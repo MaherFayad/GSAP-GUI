@@ -42,7 +42,11 @@ describe('AuthContext', () => {
   });
 
   it('should provide initial loading state', async () => {
-    const mockSubscription = { unsubscribe: vi.fn() };
+    const mockSubscription = { 
+      unsubscribe: vi.fn(),
+      id: 'mock-subscription-id',
+      callback: vi.fn()
+    };
     
     vi.mocked(supabaseClient.supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
@@ -51,7 +55,7 @@ describe('AuthContext', () => {
     
     vi.mocked(supabaseClient.supabase.auth.onAuthStateChange).mockReturnValue({
       data: { subscription: mockSubscription }
-    });
+    } as any);
     
     render(
       <AuthProvider>

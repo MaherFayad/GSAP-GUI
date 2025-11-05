@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
-import { createRef } from 'react';
 import { InspectorOverlay } from '../InspectorOverlay/InspectorOverlay';
 
 // Mock the usePostMessage hook
@@ -106,7 +105,7 @@ describe('InspectorOverlay Component', () => {
   });
 
   it('should not crash when iframeRef.current is null', () => {
-    const nullRef = { current: null };
+    const nullRef = { current: null! };
     const { container } = render(<InspectorOverlay iframeRef={nullRef} />);
     
     const overlay = container.firstChild as HTMLElement;

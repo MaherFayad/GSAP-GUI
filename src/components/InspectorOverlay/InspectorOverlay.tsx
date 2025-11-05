@@ -1,4 +1,4 @@
-import { RefObject } from 'react';
+import { type RefObject } from 'react';
 import { usePostMessage } from '../../hooks';
 
 interface InspectorOverlayProps {
@@ -32,6 +32,10 @@ export const InspectorOverlay = ({ iframeRef }: InspectorOverlayProps) => {
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent default behavior and stop propagation
+    e.preventDefault();
+    e.stopPropagation();
+    
     // Check if iframe ref is available
     if (!iframeRef.current) {
       return;

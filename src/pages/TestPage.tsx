@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { Sandbox, HighlightOverlay, InspectorOverlay } from '../components';
 import { usePostMessage } from '../hooks';
 
@@ -283,7 +283,7 @@ const SAMPLE_HTMLS = {
 type SampleKey = keyof typeof SAMPLE_HTMLS;
 
 export const TestPage = () => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null!);
   const [isSandboxReady, setIsSandboxReady] = useState(false);
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
   const [isInspectorActive, setIsInspectorActive] = useState(true);
@@ -293,10 +293,10 @@ export const TestPage = () => {
   const sendMessage = usePostMessage(iframeRef);
   const intervalRef = useRef<number | null>(null);
 
-  const addLog = (message: string) => {
+  const addLog = useCallback((message: string) => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs(prev => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)]);
-  };
+  }, []);
 
   // Handle iframe load - start handshake
   const onLoad = () => {
@@ -310,6 +310,14 @@ export const TestPage = () => {
       sendMessage('HANDSHAKE_PING');
     }, 100);
   };
+  
+  // Send inspector mode state to sandbox whenever it changes
+  useEffect(() => {
+    if (isSandboxReady) {
+      sendMessage('SET_INSPECTOR_MODE', { enabled: isInspectorActive });
+      addLog(`🔍 Inspector mode ${isInspectorActive ? 'enabled' : 'disabled'} in sandbox`);
+    }
+  }, [isInspectorActive, isSandboxReady, sendMessage, addLog]);
 
   // Listen for messages from sandbox
   useEffect(() => {
@@ -407,10 +415,11 @@ export const TestPage = () => {
           
           {/* Sample selector */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px' }}>
+            <label htmlFor="sample-selector" style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', fontSize: '14px' }}>
               Select Sample:
             </label>
             <select 
+              id="sample-selector"
               value={currentSample}
               onChange={(e) => {
                 setCurrentSample(e.target.value as SampleKey);
@@ -423,6 +432,7 @@ export const TestPage = () => {
                 border: '1px solid #ced4da',
                 fontSize: '14px'
               }}
+              title="Select sample HTML"
             >
               <option value="basic">Basic Test</option>
               <option value="complex">Complex Layout</option>

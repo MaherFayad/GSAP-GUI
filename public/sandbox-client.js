@@ -17,10 +17,20 @@
   let inspectorStyleElement = null;
   let savedStyles = new Map();
 
+  // SECURITY FIX: Store the parent origin for validation
+  var parentOrigin = null;
+  
   // Listen for messages from the editor
   window.addEventListener('message', function(event) {
-    // TODO: Add origin validation for security
-    // if (event.origin !== 'expected-origin') return;
+    // SECURITY FIX: Validate origin for all messages except handshake
+    // For srcDoc iframes, the parent origin is the same as our origin
+    if (!parentOrigin && event.data.type === 'HANDSHAKE_PING') {
+      // Store the parent origin on first handshake
+      parentOrigin = event.origin;
+    } else if (parentOrigin && event.origin !== parentOrigin) {
+      console.warn('[Sandbox Client] Rejected message from unauthorized origin:', event.origin);
+      return;
+    }
 
     const message = event.data;
 
@@ -28,7 +38,8 @@
     switch (message.type) {
       case 'HANDSHAKE_PING':
         // Respond to handshake immediately
-        window.parent.postMessage({ type: 'HANDSHAKE_PONG' }, '*');
+        // SECURITY FIX: Use validated parent origin instead of wildcard
+        window.parent.postMessage({ type: 'HANDSHAKE_PONG' }, parentOrigin || event.origin);
         break;
 
       case 'INSPECT_ELEMENT_AT':
@@ -124,6 +135,7 @@
       // Only send if element is actually visible in viewport
       if (rect.width > 0 && rect.height > 0) {
         // Send the rect back to the parent
+        // SECURITY FIX: Use validated parent origin
         window.parent.postMessage({
           type: 'HIGHLIGHT_ELEMENT',
           payload: {
@@ -132,7 +144,7 @@
             width: rect.width,
             height: rect.height
           }
-        }, '*');
+        }, parentOrigin);
       }
     }
   }
@@ -176,12 +188,13 @@
       console.log('[Sandbox Client] Element selected:', selector);
       
       // Send the selector back to the parent
+      // SECURITY FIX: Use validated parent origin
       window.parent.postMessage({
         type: 'ELEMENT_SELECTED',
         payload: {
           selector: selector
         }
-      }, '*');
+      }, parentOrigin);
     } else {
       console.warn('[Sandbox Client] Invalid element at coordinates');
     }
@@ -608,10 +621,11 @@
 
   /**
    * Send a message back to the editor
+   * SECURITY FIX: Use validated parent origin
    */
   function sendMessage(message) {
     if (window.parent !== window) {
-      window.parent.postMessage(message, '*');
+      window.parent.postMessage(message, parentOrigin);
     }
   }
 

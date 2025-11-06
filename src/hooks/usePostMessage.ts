@@ -18,7 +18,10 @@ export function usePostMessage(iframeRef: RefObject<HTMLIFrameElement>) {
       ...(payload && { payload })
     };
 
-    iframeRef.current.contentWindow.postMessage(message, '*');
+    // SECURITY FIX: Use same-origin instead of wildcard '*'
+    // For srcDoc iframes, the origin is the same as the parent window
+    const targetOrigin = window.location.origin;
+    iframeRef.current.contentWindow.postMessage(message, targetOrigin);
   }, [iframeRef]);
 
   return sendMessage;

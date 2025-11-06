@@ -38,6 +38,13 @@ export const EditorPage = () => {
   // Listen for messages from sandbox
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+      // SECURITY FIX: Validate origin - only accept messages from same origin
+      // For srcDoc iframes, the origin is the same as the parent window
+      if (event.origin !== window.location.origin) {
+        console.warn('[EditorPage] Rejected message from unauthorized origin:', event.origin);
+        return;
+      }
+      
       if (event.data.type === 'HANDSHAKE_PONG') {
         console.log('[EditorPage] Received HANDSHAKE_PONG - sandbox ready!');
         

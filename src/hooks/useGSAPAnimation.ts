@@ -17,11 +17,17 @@ export const useGSAPAnimation = <T extends HTMLElement>(
   } = {}
 ) => {
   const elementRef = useRef<T>(null);
+  // PERFORMANCE FIX: Store options in a ref to prevent re-running effect
+  // when the options object reference changes but values are the same
+  const optionsRef = useRef(options);
+  
+  // Update the ref when options change
+  optionsRef.current = options;
 
   useEffect(() => {
     if (!elementRef.current) return;
 
-    const { from, to, onComplete } = options;
+    const { from, to, onComplete } = optionsRef.current;
 
     if (from) {
       gsap.set(elementRef.current, from);
@@ -33,7 +39,9 @@ export const useGSAPAnimation = <T extends HTMLElement>(
         onComplete,
       });
     }
-  }, [options]);
+    // Empty dependency array - only run once on mount
+    // The animation uses optionsRef.current which always has the latest values
+  }, []);
 
   return elementRef;
 };

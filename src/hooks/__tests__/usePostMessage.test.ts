@@ -29,9 +29,10 @@ describe('usePostMessage Hook', () => {
     
     sendMessage('TEST_MESSAGE');
     
+    // SECURITY FIX: Now uses window.location.origin instead of wildcard
     expect(mockPostMessage).toHaveBeenCalledWith(
       { type: 'TEST_MESSAGE' },
-      '*'
+      window.location.origin
     );
   });
 
@@ -42,9 +43,10 @@ describe('usePostMessage Hook', () => {
     const payload = { data: 'test', value: 123 };
     sendMessage('TEST_MESSAGE', payload);
     
+    // SECURITY FIX: Now uses window.location.origin instead of wildcard
     expect(mockPostMessage).toHaveBeenCalledWith(
       { type: 'TEST_MESSAGE', payload },
-      '*'
+      window.location.origin
     );
   });
 
@@ -125,9 +127,10 @@ describe('usePostMessage Hook', () => {
     
     sendMessage('APPLY_ANIMATION', complexPayload);
     
+    // SECURITY FIX: Now uses window.location.origin instead of wildcard
     expect(mockPostMessage).toHaveBeenCalledWith(
       { type: 'APPLY_ANIMATION', payload: complexPayload },
-      '*'
+      window.location.origin
     );
   });
 });

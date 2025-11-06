@@ -104,6 +104,19 @@ describe('usePostMessage Hook', () => {
     expect(mockPostMessage).toHaveBeenCalledTimes(4);
   });
 
+  it('should include falsy payload values', () => {
+    const { result } = renderHook(() => usePostMessage(iframeRef));
+    const sendMessage = result.current;
+
+    sendMessage('UPDATE_PROGRESS', 0);
+    sendMessage('TOGGLE_FLAG', false);
+    sendMessage('SET_VALUE', '');
+
+    expect(mockPostMessage).toHaveBeenNthCalledWith(1, { type: 'UPDATE_PROGRESS', payload: 0 }, '*');
+    expect(mockPostMessage).toHaveBeenNthCalledWith(2, { type: 'TOGGLE_FLAG', payload: false }, '*');
+    expect(mockPostMessage).toHaveBeenNthCalledWith(3, { type: 'SET_VALUE', payload: '' }, '*');
+  });
+
   it('should handle complex payloads', () => {
     const { result } = renderHook(() => usePostMessage(iframeRef));
     const sendMessage = result.current;

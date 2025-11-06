@@ -9,6 +9,9 @@
 (function() {
   'use strict';
 
+  const referrerOrigin = getReferrerOrigin();
+  let trustedOrigin = referrerOrigin;
+
   // Track the currently hovered/highlighted element
   let currentHoveredElement = null;
   
@@ -19,16 +22,17 @@
 
   // Listen for messages from the editor
   window.addEventListener('message', function(event) {
-    // TODO: Add origin validation for security
-    // if (event.origin !== 'expected-origin') return;
-
     const message = event.data;
+
+    if (!isTrustedMessage(event, message)) {
+      return;
+    }
 
     // Handle different message types
     switch (message.type) {
       case 'HANDSHAKE_PING':
         // Respond to handshake immediately
-        window.parent.postMessage({ type: 'HANDSHAKE_PONG' }, '*');
+        sendMessage({ type: 'HANDSHAKE_PONG' });
         break;
 
       case 'INSPECT_ELEMENT_AT':
@@ -72,6 +76,42 @@
     }
   });
 
+  function isTrustedMessage(event, message) {
+    if (!message || typeof message !== 'object' || typeof message.type !== 'string') {
+      return false;
+    }
+
+    if (event.source !== window.parent) {
+      return false;
+    }
+
+    const origin = event.origin;
+
+    if (trustedOrigin) {
+      if (origin === trustedOrigin) {
+        return true;
+      }
+
+      if (origin === 'null') {
+        return true;
+      }
+
+      return false;
+    }
+
+    if (origin && origin !== 'null') {
+      trustedOrigin = origin;
+      return true;
+    }
+
+    if (referrerOrigin) {
+      trustedOrigin = referrerOrigin;
+      return true;
+    }
+
+    return false;
+  }
+
   /**
    * Inspect element at given coordinates
    */
@@ -107,33 +147,33 @@
         el !== document.body &&
         el.tagName.toLowerCase() !== 'script') {
       
-      // Remove highlight from the previous element
-      if (currentHoveredElement) {
-        currentHoveredElement.classList.remove('gsp-highlight');
-      }
-      
-      // Add highlight to the new element
-      el.classList.add('gsp-highlight');
-      
-      // Update the current hovered element
-      currentHoveredElement = el;
-      
-      // Get the element's bounding box
-      const rect = el.getBoundingClientRect();
-      
-      // Only send if element is actually visible in viewport
-      if (rect.width > 0 && rect.height > 0) {
-        // Send the rect back to the parent
-        window.parent.postMessage({
-          type: 'HIGHLIGHT_ELEMENT',
-          payload: {
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height
-          }
-        }, '*');
-      }
+        // Remove highlight from the previous element
+        if (currentHoveredElement) {
+          currentHoveredElement.classList.remove('gsp-highlight');
+        }
+        
+        // Add highlight to the new element
+        el.classList.add('gsp-highlight');
+        
+        // Update the current hovered element
+        currentHoveredElement = el;
+        
+        // Get the element's bounding box
+        const rect = el.getBoundingClientRect();
+        
+        // Only send if element is actually visible in viewport
+        if (rect.width > 0 && rect.height > 0) {
+          // Send the rect back to the parent
+          sendMessage({
+            type: 'HIGHLIGHT_ELEMENT',
+            payload: {
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height
+            }
+          });
+        }
     }
   }
 
@@ -165,23 +205,24 @@
     }
     
     // Filter out invalid elements
-    if (el && 
-        el !== document.documentElement && 
-        el !== document.body &&
-        el.tagName.toLowerCase() !== 'script') {
-      
+    if (
+      el &&
+      el !== document.documentElement &&
+      el !== document.body &&
+      el.tagName.toLowerCase() !== 'script'
+    ) {
       // Generate a stable CSS selector for this element
       const selector = generateStableSelector(el);
       
       console.log('[Sandbox Client] Element selected:', selector);
       
       // Send the selector back to the parent
-      window.parent.postMessage({
+      sendMessage({
         type: 'ELEMENT_SELECTED',
         payload: {
           selector: selector
         }
-      }, '*');
+      });
     } else {
       console.warn('[Sandbox Client] Invalid element at coordinates');
     }
@@ -606,12 +647,31 @@
     }
   }
 
+  function getReferrerOrigin() {
+    if (!document.referrer) {
+      return null;
+    }
+
+    try {
+      return new URL(document.referrer).origin;
+    } catch (_error) {
+      return null;
+    }
+  }
+
   /**
    * Send a message back to the editor
    */
   function sendMessage(message) {
     if (window.parent !== window) {
-      window.parent.postMessage(message, '*');
+      const targetOrigin =
+        (trustedOrigin && trustedOrigin !== 'null')
+          ? trustedOrigin
+          : (referrerOrigin && referrerOrigin !== 'null')
+            ? referrerOrigin
+            : '*';
+
+      window.parent.postMessage(message, targetOrigin);
     }
   }
 

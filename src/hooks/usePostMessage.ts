@@ -13,10 +13,11 @@ export function usePostMessage(iframeRef: RefObject<HTMLIFrameElement>) {
       return;
     }
 
-    const message = {
-      type,
-      ...(payload && { payload })
-    };
+    const message: { type: string; payload?: any } = { type };
+
+    if (payload !== undefined) {
+      message.payload = payload;
+    }
 
     iframeRef.current.contentWindow.postMessage(message, '*');
   }, [iframeRef]);

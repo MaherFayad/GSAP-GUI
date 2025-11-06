@@ -358,10 +358,12 @@ export const TestPage = () => {
   }, []);
 
   // Get iframe rect for positioning the highlight overlay
-  const iframeRect = iframeRef.current ? {
-    top: iframeRef.current.getBoundingClientRect().top,
-    left: iframeRef.current.getBoundingClientRect().left
-  } : null;
+  const iframeRect = iframeRef.current
+    ? {
+        top: iframeRef.current.offsetTop,
+        left: iframeRef.current.offsetLeft,
+      }
+    : null;
 
   const testHighlightElement = () => {
     if (!isSandboxReady) {

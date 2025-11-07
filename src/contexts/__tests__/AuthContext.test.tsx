@@ -64,6 +64,11 @@ describe('AuthContext', () => {
     );
     
     expect(screen.getByTestId('loading')).toHaveTextContent('loading');
+    
+    // Wait for the async session fetch to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
+    });
   });
 
   it('should update when session is available', async () => {

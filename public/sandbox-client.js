@@ -47,6 +47,10 @@
         handleInit(message);
         break;
 
+      case 'PLAY_ANIMATION':
+        playTimeline(message.payload);
+        break;
+
       case 'APPLY_ANIMATION':
         handleApplyAnimation(message);
         break;
@@ -321,62 +325,159 @@
   
   /**
    * Generate a stable CSS selector for an element
-   * Prioritizes ID, then class combinations, then tag with nth-child
+   * Priority-based strategy:
+   * 1. Custom data attributes (data-gsap-id, data-animation-id)
+   * 2. Unique ID
+   * 3. DOM path traversal with nth-child
    */
-  function generateStableSelector(element) {
-    // If element has an ID, use it (most stable)
-    if (element.id) {
-      return '#' + element.id;
+  function generateStableSelector(el) {
+    // Priority 1: Check for custom data attributes
+    if (el.dataset.gsapId) {
+      return '[data-gsap-id="' + el.dataset.gsapId + '"]';
     }
-
-    // Try to build a selector using classes
-    if (element.className && typeof element.className === 'string') {
-      const classes = element.className.trim().split(/\s+/).filter(function(cls) {
-        // Filter out highlight class we added
-        return cls && cls !== 'gsp-highlight';
-      });
-      
-      if (classes.length > 0) {
-        const classSelector = element.tagName.toLowerCase() + '.' + classes.join('.');
-        // Check if this selector is unique
-        if (document.querySelectorAll(classSelector).length === 1) {
-          return classSelector;
-        }
+    
+    if (el.dataset.animationId) {
+      return '[data-animation-id="' + el.dataset.animationId + '"]';
+    }
+    
+    // Priority 2: Check for unique ID
+    if (el.id) {
+      // Verify the ID is unique in the document
+      const idSelector = '#' + el.id;
+      if (document.querySelectorAll(idSelector).length === 1) {
+        return idSelector;
       }
     }
-
-    // Build a path using tag names and nth-child
+    
+    // Priority 3: Fall back to DOM path traversal
     var path = [];
-    var current = element;
-
-    while (current && current.nodeType === Node.ELEMENT_NODE) {
+    var current = el;
+    
+    while (current && current.nodeType === Node.ELEMENT_NODE && current !== document.documentElement) {
       var selector = current.tagName.toLowerCase();
       
-      if (current.id) {
-        selector = '#' + current.id;
-        path.unshift(selector);
-        break;
-      } else {
-        var sibling = current;
-        var nth = 1;
-        
-        while (sibling.previousElementSibling) {
-          sibling = sibling.previousElementSibling;
-          if (sibling.tagName === current.tagName) {
-            nth++;
-          }
-        }
-        
-        if (nth > 1 || current.nextElementSibling) {
-          selector += ':nth-child(' + nth + ')';
-        }
+      // Calculate nth-child index
+      var sibling = current;
+      var nth = 1;
+      
+      // Count previous siblings with the same tag name
+      while (sibling.previousElementSibling) {
+        sibling = sibling.previousElementSibling;
+        nth++;
       }
       
+      // Add nth-child to make selector more specific
+      selector += ':nth-child(' + nth + ')';
+      
+      // Prepend to path array
       path.unshift(selector);
+      
+      // Move up to parent
       current = current.parentElement;
+      
+      // Stop at body to keep selectors manageable
+      if (current === document.body) {
+        path.unshift('body');
+        break;
+      }
     }
-
+    
+    // Join the path with direct child combinator
     return path.join(' > ');
+  }
+
+  /**
+   * Ensure GSAP is loaded from CDN
+   * Returns a promise that resolves with the gsap object
+   */
+  async function ensureGsapIsLoaded() {
+    // Check if GSAP is already loaded
+    if (window.gsap) {
+      return window.gsap;
+    }
+    
+    // Create and load the GSAP script from CDN
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js';
+    document.head.appendChild(script);
+    
+    // Return a promise that resolves when the script loads
+    return new Promise((resolve) => {
+      script.onload = () => resolve(window.gsap);
+    });
+  }
+
+  /**
+   * Play a GSAP timeline with the given data
+   * @param {Object} timelineData - The timeline configuration
+   * @param {Object} timelineData.settings - Timeline settings (e.g., repeat, yoyo, etc.)
+   * @param {Array} timelineData.tweens - Array of tween objects
+   * @returns {Promise<gsap.core.Timeline>} The created timeline
+   */
+  async function playTimeline(timelineData) {
+    // Ensure GSAP is loaded
+    const gsap = await ensureGsapIsLoaded();
+    
+    // Create the timeline with provided settings
+    const tl = gsap.timeline(timelineData.settings);
+    
+    // Loop through all tweens and add them to the timeline
+    for (const tween of timelineData.tweens) {
+      // Parse the ease string back into a GSAP ease function
+      if (tween.parameters && tween.parameters.ease) {
+        tween.parameters.ease = gsap.parseEase(tween.parameters.ease);
+      }
+      
+      // Reconstruct the GSAP method call based on the tween method
+      switch (tween.method) {
+        case 'to':
+          tl.to(
+            tween.target_selector,
+            {
+              ...tween.end_properties,
+              ...tween.parameters
+            },
+            tween.position
+          );
+          break;
+          
+        case 'from':
+          tl.from(
+            tween.target_selector,
+            {
+              ...tween.start_properties,
+              ...tween.parameters
+            },
+            tween.position
+          );
+          break;
+          
+        case 'fromTo':
+          tl.fromTo(
+            tween.target_selector,
+            tween.start_properties,
+            {
+              ...tween.end_properties,
+              ...tween.parameters
+            },
+            tween.position
+          );
+          break;
+          
+        case 'set':
+          tl.set(
+            tween.target_selector,
+            tween.end_properties,
+            tween.position
+          );
+          break;
+          
+        default:
+          console.warn('[Sandbox Client] Unknown tween method:', tween.method);
+      }
+    }
+    
+    return tl;
   }
 
   /**

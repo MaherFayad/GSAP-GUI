@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
-import { Sandbox, HighlightOverlay, InspectorOverlay } from '../components';
+import { useNavigate } from 'react-router-dom';
+import { Sandbox, HighlightOverlay, InspectorOverlay, Button } from '../components';
 import { usePostMessage } from '../hooks';
+import { supabase } from '../utils/supabaseClient';
 
 interface HighlightBox {
   top: number;
@@ -10,6 +12,7 @@ interface HighlightBox {
 }
 
 export const EditorPage = () => {
+  const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null!);
   const [isSandboxReady, setIsSandboxReady] = useState(false);
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
@@ -17,6 +20,11 @@ export const EditorPage = () => {
   const [selectedSelector, setSelectedSelector] = useState<string | null>(null);
   const sendMessage = usePostMessage(iframeRef);
   const intervalRef = useRef<number | null>(null);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   // Handle iframe load - start handshake
   const onLoad = () => {
@@ -135,33 +143,38 @@ export const EditorPage = () => {
   } : null;
 
   return (
-    <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '10px', background: '#333', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100vw',padding: '10px', background: '#333', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'left !important' }}>
         <div>
-          <h2 style={{ margin: 0 }}>GSAP Editor</h2>
+          <h2 style={{ margin: 0, width: '100vw' }}>GSAP Editor</h2>
           <p style={{ margin: '5px 0' }}>
             Sandbox Status: {isSandboxReady ? '✅ Ready' : '⏳ Connecting...'}
           </p>
           {selectedSelector && (
             <p style={{ margin: '5px 0', fontSize: '0.9em', color: '#3498db' }}>
-              Selected: <code style={{ background: '#444', padding: '2px 6px', borderRadius: '3px' }}>{selectedSelector}</code>
+              Selected: <code style={{ width: '100px', background: '#444', padding: '2px 6px', borderRadius: '3px' }}>{selectedSelector}</code>
             </p>
           )}
         </div>
-        <button
-          onClick={() => setIsInspectorActive(!isInspectorActive)}
-          style={{
-            padding: '10px 20px',
-            background: isInspectorActive ? '#e74c3c' : '#27ae60',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          {isInspectorActive ? '🔍 Inspector ON' : '🔍 Inspector OFF'}
-        </button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            onClick={() => setIsInspectorActive(!isInspectorActive)}
+            style={{
+              padding: '10px 20px',
+              background: isInspectorActive ? '#e74c3c' : '#27ae60',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            {isInspectorActive ? '🔍 Inspector ON' : '🔍 Inspector OFF'}
+          </button>
+          <Button variant="secondary" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
       </div>
       
       <div style={{ flex: 1, position: 'relative' }}>

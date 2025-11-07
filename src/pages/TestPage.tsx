@@ -66,6 +66,8 @@ const SAMPLE_HTMLS = {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 20px;
+      width: 600px;
+      height: 100%;
     }
     .container {
       max-width: 1200px;
@@ -388,9 +390,11 @@ export const TestPage = () => {
         padding: '15px 20px', 
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
         color: 'white',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        width: '100vw',
+        alignItems: 'left !important',
       }}>
-        <h2 style={{ margin: 0, fontSize: '24px' }}>🧪 GSAP Editor Test Page</h2>
+        <h2 style={{ margin: 0, fontSize: '24px', width: '100vw' }}>🧪 GSAP Editor Test Page</h2>
         <p style={{ margin: '5px 0', opacity: 0.9, fontSize: '14px' }}>
           Sandbox: {isSandboxReady ? '✅ Ready' : '⏳ Connecting...'}
           {selectedSelector && (

@@ -14,5 +14,38 @@ export interface Timeline {
   animations: Animation[];
 }
 
+// Animation data structures for keyframes
+export interface TweenProperties {
+  x?: number;
+  y?: number;
+  scale?: number;
+  rotation?: number;
+  opacity?: number;
+  backgroundColor?: string;
+  color?: string;
+}
+
+export interface Keyframe {
+  id: string;
+  time: number;
+  selector: string;
+  properties: TweenProperties;
+  duration?: number;
+  ease?: string;
+}
+
+export interface TimelineData {
+  id: string;
+  name: string;
+  keyframes: Keyframe[];
+}
+
+export interface AnimationData {
+  timelines: {
+    [key: string]: TimelineData;
+  };
+  activeTimelineId?: string;
+}
+
 // Add more types as needed
 

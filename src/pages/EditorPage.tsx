@@ -1,14 +1,32 @@
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sandbox, HighlightOverlay, InspectorOverlay, Button } from '../components';
+import { 
+  Sandbox, 
+  HighlightOverlay, 
+  InspectorOverlay, 
+  Button, 
+  LayerTree,
+  TimelineEditor,
+  StateMachineEditor
+} from '../components';
+import { PropertiesPanel } from '../components/PropertiesPanel/PropertiesPanel';
 import { usePostMessage } from '../hooks';
 import { supabase } from '../utils/supabaseClient';
+import type { AnimationData } from '../types';
 
 interface HighlightBox {
   top: number;
   left: number;
   width: number;
   height: number;
+}
+
+interface SerializedNode {
+  tagName: string;
+  id: string;
+  classes: string;
+  stableSelector: string;
+  children: SerializedNode[];
 }
 
 export const EditorPage = () => {
@@ -18,6 +36,11 @@ export const EditorPage = () => {
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
   const [isInspectorActive, setIsInspectorActive] = useState(true); // Inspector active by default
   const [selectedSelector, setSelectedSelector] = useState<string | null>(null);
+  const [domTree, setDomTree] = useState<SerializedNode | null>(null);
+  const [animationData, setAnimationData] = useState<AnimationData>({ 
+    timelines: {} 
+  });
+  const [activeTab, setActiveTab] = useState('timelines');
   const sendMessage = usePostMessage(iframeRef);
   const intervalRef = useRef<number | null>(null);
 
@@ -25,6 +48,11 @@ export const EditorPage = () => {
     await supabase.auth.signOut();
     navigate('/login');
   };
+
+  // Debug: Log animation data changes
+  useEffect(() => {
+    console.log('[EditorPage] Animation data updated:', animationData);
+  }, [animationData]);
 
   // Handle iframe load - start handshake
   const onLoad = () => {
@@ -57,6 +85,9 @@ export const EditorPage = () => {
         
         // Mark sandbox as ready
         setIsSandboxReady(true);
+        
+        // Request the DOM tree
+        sendMessage('GET_DOM_TREE');
       } else if (event.data.type === 'HIGHLIGHT_ELEMENT') {
         // Update highlight box with element's bounding rect
         setHighlightBox(event.data.payload);
@@ -64,6 +95,10 @@ export const EditorPage = () => {
         // Store the selected element's CSS selector
         console.log('[EditorPage] Element selected:', event.data.payload.selector);
         setSelectedSelector(event.data.payload.selector);
+      } else if (event.data.type === 'DOM_TREE_RECEIVED') {
+        // Store the DOM tree structure
+        console.log('[EditorPage] DOM tree received:', event.data.payload);
+        setDomTree(event.data.payload);
       }
     };
 
@@ -177,23 +212,153 @@ export const EditorPage = () => {
         </div>
       </div>
       
-      <div style={{ flex: 1, position: 'relative' }}>
-        <Sandbox 
-          ref={iframeRef}
-          srcDoc={sampleHTML}
-          onLoad={onLoad}
-        />
+      <div style={{ flex: 1, display: 'flex' }}>
+        {/* Left Panel - Layers */}
+        <div 
+          className="editor-left-panel" 
+          style={{ 
+            width: '250px', 
+            background: '#2a2a2a', 
+            color: '#fff', 
+            overflowY: 'auto',
+            borderRight: '1px solid #444'
+          }}
+        >
+          <div style={{ padding: '10px', borderBottom: '1px solid #444' }}>
+            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>Layers</h3>
+          </div>
+          <div style={{ padding: '10px' }}>
+            {domTree ? (
+              <LayerTree 
+                node={domTree} 
+                onSelect={(selector) => {
+                  setSelectedSelector(selector);
+                  setIsInspectorActive(false);
+                }}
+              />
+            ) : (
+              <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>
+                Loading DOM tree...
+              </p>
+            )}
+          </div>
+        </div>
         
-        {/* Inspector overlay to capture mouse events */}
-        {isInspectorActive && isSandboxReady && (
-          <InspectorOverlay iframeRef={iframeRef} />
-        )}
+        {/* Main Content - Sandbox and Bottom Panel */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          {/* Sandbox */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            <Sandbox 
+              ref={iframeRef}
+              srcDoc={sampleHTML}
+              onLoad={onLoad}
+            />
+            
+            {/* Inspector overlay to capture mouse events */}
+            {isInspectorActive && isSandboxReady && (
+              <InspectorOverlay iframeRef={iframeRef} />
+            )}
+            
+            {/* Highlight overlay to show selected element */}
+            <HighlightOverlay 
+              highlightBox={highlightBox}
+              iframeRect={iframeRect}
+            />
+          </div>
+
+          {/* Bottom Panel */}
+          <div 
+            className="editor-bottom-panel"
+            style={{
+              height: '200px',
+              background: '#2a2a2a',
+              borderTop: '1px solid #444',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            {/* Tab Buttons */}
+            <div style={{ 
+              display: 'flex', 
+              background: '#1e1e1e', 
+              borderBottom: '1px solid #444'
+            }}>
+              <button
+                onClick={() => setActiveTab('timelines')}
+                style={{
+                  padding: '10px 20px',
+                  background: activeTab === 'timelines' ? '#2a2a2a' : 'transparent',
+                  color: activeTab === 'timelines' ? '#fff' : '#888',
+                  border: 'none',
+                  borderBottom: activeTab === 'timelines' ? '2px solid #3498db' : 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: activeTab === 'timelines' ? 'bold' : 'normal',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Timelines
+              </button>
+              <button
+                onClick={() => setActiveTab('workflow')}
+                style={{
+                  padding: '10px 20px',
+                  background: activeTab === 'workflow' ? '#2a2a2a' : 'transparent',
+                  color: activeTab === 'workflow' ? '#fff' : '#888',
+                  border: 'none',
+                  borderBottom: activeTab === 'workflow' ? '2px solid #3498db' : 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: activeTab === 'workflow' ? 'bold' : 'normal',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Workflow
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              {activeTab === 'timelines' && (
+                <TimelineEditor
+                  animationData={animationData}
+                  setAnimationData={setAnimationData}
+                  sendMessage={sendMessage}
+                />
+              )}
+              {activeTab === 'workflow' && (
+                <StateMachineEditor
+                  animationData={animationData}
+                  setAnimationData={setAnimationData}
+                  sendMessage={sendMessage}
+                />
+              )}
+            </div>
+          </div>
+        </div>
         
-        {/* Highlight overlay to show selected element */}
-        <HighlightOverlay 
-          highlightBox={highlightBox}
-          iframeRect={iframeRect}
-        />
+        {/* Right Panel - Properties */}
+        <div 
+          className="editor-right-panel" 
+          style={{ 
+            width: '300px', 
+            background: '#2a2a2a', 
+            color: '#fff', 
+            overflowY: 'auto',
+            borderLeft: '1px solid #444'
+          }}
+        >
+          <div style={{ padding: '10px', borderBottom: '1px solid #444' }}>
+            <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>Properties</h3>
+          </div>
+          <PropertiesPanel
+            selectedElement={selectedSelector}
+            sendMessage={sendMessage}
+            animationData={animationData}
+            setAnimationData={setAnimationData}
+            currentTime={0} // We'll connect this to the timeline later
+          />
+        </div>
       </div>
     </div>
   );

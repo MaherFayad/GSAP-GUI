@@ -75,6 +75,10 @@
         handleTweakAnimation(message);
         break;
 
+      case 'GET_DOM_TREE':
+        handleGetDomTree(message);
+        break;
+
       default:
         console.warn('[Sandbox Client] Unknown message type:', message.type);
     }
@@ -726,6 +730,84 @@
       gsap.set(selector, properties);
     } catch (error) {
       console.error('[Sandbox Client] Error tweaking animation:', error);
+    }
+  }
+
+  /**
+   * Serialize a DOM node into a lightweight JSON object
+   * @param {Node} node - The DOM node to serialize
+   * @returns {Object|null} JSON representation of the node and its children
+   */
+  function serializeNode(node) {
+    // Only process ELEMENT_NODEs
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+      return null;
+    }
+    
+    // Get the tag name
+    const tagName = node.tagName;
+    
+    // Get the ID
+    const id = node.id || '';
+    
+    // Get the classes as a space-separated string
+    const classes = node.className || '';
+    
+    // Generate a stable selector using our existing function
+    const stableSelector = generateStableSelector(node);
+    
+    // Recursively serialize children
+    const children = [];
+    for (let i = 0; i < node.childNodes.length; i++) {
+      const child = node.childNodes[i];
+      
+      // Skip non-element nodes (text nodes, comments, etc.)
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const serializedChild = serializeNode(child);
+        if (serializedChild) {
+          children.push(serializedChild);
+        }
+      }
+    }
+    
+    // Return the JSON object
+    return {
+      tagName: tagName,
+      id: id,
+      classes: classes,
+      stableSelector: stableSelector,
+      children: children
+    };
+  }
+
+  /**
+   * Handle GET_DOM_TREE message
+   * Serialize the DOM tree and send it back to the parent
+   */
+  function handleGetDomTree(message) {
+    try {
+      console.log('[Sandbox Client] Serializing DOM tree...');
+      
+      // Serialize the entire body
+      const domTreeJson = serializeNode(document.body);
+      
+      // Send the result back to the parent
+      window.parent.postMessage({
+        type: 'DOM_TREE_RECEIVED',
+        payload: domTreeJson
+      }, '*');
+      
+      console.log('[Sandbox Client] DOM tree sent to parent');
+    } catch (error) {
+      console.error('[Sandbox Client] Error serializing DOM tree:', error);
+      
+      // Send error message back to parent
+      window.parent.postMessage({
+        type: 'ERROR',
+        payload: {
+          message: `Failed to serialize DOM tree: ${error.message}`
+        }
+      }, '*');
     }
   }
 

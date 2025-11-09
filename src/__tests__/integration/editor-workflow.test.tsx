@@ -39,8 +39,8 @@ describe('Editor Workflow Integration', () => {
     workflow.push({ step: 'show-overlay', data: { visible: true } });
     
     expect(workflow).toHaveLength(4);
-    expect(workflow[0].step).toBe('hover');
-    expect(workflow[3].step).toBe('show-overlay');
+    expect(workflow[0]?.step).toBe('hover');
+    expect(workflow[3]?.step).toBe('show-overlay');
   });
 
   it('should complete element selection workflow', () => {
@@ -65,7 +65,7 @@ describe('Editor Workflow Integration', () => {
     workflow.push({ step: 'store-selection', data: { selector: '.box' } });
     
     expect(workflow).toHaveLength(4);
-    expect(workflow[3].data.selector).toBe('.box');
+    expect(workflow[3]?.data?.selector).toBe('.box');
   });
 
   it('should complete animation application workflow', () => {
@@ -99,7 +99,7 @@ describe('Editor Workflow Integration', () => {
     });
     
     expect(workflow).toHaveLength(4);
-    expect(workflow[3].data.payload.success).toBe(true);
+    expect(workflow[3]?.data?.payload?.success).toBe(true);
   });
 
   it('should handle error workflow', () => {
@@ -126,7 +126,7 @@ describe('Editor Workflow Integration', () => {
     });
     
     expect(workflow.some(s => s.error)).toBe(true);
-    expect(workflow[2].data.message).toContain('Element not found');
+    expect(workflow[2]?.data?.message).toContain('Element not found');
   });
 
   it('should support animation control workflow', () => {

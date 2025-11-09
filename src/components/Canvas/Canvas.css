@@ -1,0 +1,176 @@
+/* Webstudio-inspired Canvas with Zoom and Pan */
+
+.ws-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ws-canvas-background);
+}
+
+.ws-canvas-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(var(--ws-canvas-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ws-canvas-grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.ws-canvas-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.ws-canvas-viewport.panning {
+  cursor: grabbing;
+}
+
+.ws-canvas-viewport.inspector-active {
+  cursor: crosshair;
+}
+
+.ws-canvas-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  transition: transform 0.05s ease-out;
+  will-change: transform;
+}
+
+/* Canvas Controls */
+.ws-canvas-controls {
+  position: absolute;
+  bottom: var(--ws-space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--ws-space-2);
+  background: var(--ws-background-surface);
+  border: 1px solid var(--ws-border-main);
+  border-radius: var(--ws-radius-4);
+  padding: var(--ws-space-2);
+  box-shadow: var(--ws-shadow-3);
+  z-index: var(--ws-z-overlay);
+}
+
+.ws-canvas-controls-group {
+  display: flex;
+  align-items: center;
+  gap: var(--ws-space-1);
+}
+
+.ws-canvas-controls-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--ws-border-main);
+  margin: 0 var(--ws-space-2);
+}
+
+.ws-canvas-control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--ws-radius-2);
+  color: var(--ws-text-secondary);
+  cursor: pointer;
+  transition: all var(--ws-transition-fast);
+  font-size: var(--ws-font-size-3);
+  font-weight: var(--ws-font-weight-medium);
+}
+
+.ws-canvas-control-button:hover {
+  background: var(--ws-button-background-hover);
+  color: var(--ws-text-primary);
+}
+
+.ws-canvas-control-button:active {
+  background: var(--ws-button-background-active);
+}
+
+.ws-canvas-control-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ws-canvas-zoom-display {
+  min-width: 56px;
+  font-family: var(--ws-font-mono);
+  font-size: var(--ws-font-size-2);
+}
+
+/* Canvas Info */
+.ws-canvas-info {
+  position: absolute;
+  top: var(--ws-space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--ws-space-3);
+  background: var(--ws-background-surface);
+  border: 1px solid var(--ws-border-main);
+  border-radius: var(--ws-radius-3);
+  padding: var(--ws-space-2) var(--ws-space-4);
+  font-size: var(--ws-font-size-2);
+  color: var(--ws-text-tertiary);
+  z-index: var(--ws-z-overlay);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ws-transition-normal);
+}
+
+.ws-canvas-container:hover .ws-canvas-info {
+  opacity: 1;
+}
+
+.ws-canvas-info-item {
+  font-family: var(--ws-font-mono);
+  white-space: nowrap;
+}
+
+.ws-canvas-info-divider {
+  color: var(--ws-border-main);
+}
+
+/* Artboard */
+.ws-canvas-artboard {
+  background: var(--ws-canvas-artboard);
+  border: 1px solid var(--ws-border-main);
+  box-shadow: var(--ws-shadow-3);
+  position: relative;
+  min-width: 320px;
+  min-height: 568px;
+}
+
+/* Highlight overlay in canvas */
+.ws-canvas-highlight {
+  border-radius: var(--ws-radius-1);
+}
+
+/* Label for highlighted element */
+.ws-canvas-highlight-label {
+  position: absolute;
+  top: -24px;
+  left: 0;
+  background: var(--ws-highlight-border);
+  color: white;
+  padding: var(--ws-space-1) var(--ws-space-2);
+  border-radius: var(--ws-radius-2);
+  font-size: var(--ws-font-size-1);
+  font-family: var(--ws-font-mono);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--ws-shadow-2);
+}
+

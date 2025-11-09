@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
-import { EditorPage } from './pages/EditorPage';
+import { EditorPageNew } from './pages/EditorPageNew';
 import { TestPage } from './pages/TestPage';
 import './styles/App.css';
 
@@ -25,7 +25,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'editor/:projectId',
-        element: <EditorPage />,
+        element: <EditorPageNew />,
       },
     ],
   },

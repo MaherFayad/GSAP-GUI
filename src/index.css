@@ -1,3 +1,6 @@
+/* Import Webstudio design tokens */
+@import './styles/webstudio-tokens.css';
+
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 

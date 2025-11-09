@@ -1,0 +1,278 @@
+/* Webstudio-inspired Properties Panel */
+
+.ws-properties-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--ws-background-panel);
+}
+
+.ws-properties-section {
+  border-bottom: 1px solid var(--ws-border-main);
+}
+
+.ws-properties-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ws-space-3) var(--ws-space-4);
+  background: var(--ws-background-surface);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--ws-transition-fast);
+}
+
+.ws-properties-section-header:hover {
+  background: var(--ws-background-surface-hover);
+}
+
+.ws-properties-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--ws-space-2);
+  font-size: var(--ws-font-size-3);
+  font-weight: var(--ws-font-weight-medium);
+  color: var(--ws-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ws-properties-section-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--ws-text-tertiary);
+  transition: transform var(--ws-transition-fast);
+}
+
+.ws-properties-section-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.ws-properties-section-content {
+  padding: var(--ws-space-4);
+}
+
+.ws-properties-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ws-space-2);
+  margin-bottom: var(--ws-space-4);
+}
+
+.ws-properties-row:last-child {
+  margin-bottom: 0;
+}
+
+.ws-properties-label {
+  font-size: var(--ws-font-size-2);
+  font-weight: var(--ws-font-weight-medium);
+  color: var(--ws-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ws-properties-input {
+  width: 100%;
+  padding: var(--ws-space-2) var(--ws-space-3);
+  background: var(--ws-input-background);
+  border: 1px solid var(--ws-input-border);
+  border-radius: var(--ws-radius-2);
+  color: var(--ws-text-primary);
+  font-size: var(--ws-font-size-3);
+  font-family: var(--ws-font-mono);
+  outline: none;
+  transition: border-color var(--ws-transition-fast);
+}
+
+.ws-properties-input:focus {
+  border-color: var(--ws-input-border-focus);
+}
+
+.ws-properties-input:hover {
+  border-color: var(--ws-border-hover);
+}
+
+.ws-properties-input::placeholder {
+  color: var(--ws-text-tertiary);
+}
+
+.ws-properties-input-group {
+  display: flex;
+  gap: var(--ws-space-2);
+}
+
+.ws-properties-input-group .ws-properties-input {
+  flex: 1;
+}
+
+.ws-properties-unit {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--ws-space-3);
+  background: var(--ws-background-surface);
+  border: 1px solid var(--ws-input-border);
+  border-left: none;
+  border-radius: 0 var(--ws-radius-2) var(--ws-radius-2) 0;
+  color: var(--ws-text-tertiary);
+  font-size: var(--ws-font-size-2);
+  font-family: var(--ws-font-mono);
+  user-select: none;
+}
+
+.ws-properties-select {
+  width: 100%;
+  padding: var(--ws-space-2) var(--ws-space-3);
+  background: var(--ws-input-background);
+  border: 1px solid var(--ws-input-border);
+  border-radius: var(--ws-radius-2);
+  color: var(--ws-text-primary);
+  font-size: var(--ws-font-size-3);
+  font-family: var(--ws-font-sans);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--ws-transition-fast);
+}
+
+.ws-properties-select:focus {
+  border-color: var(--ws-input-border-focus);
+}
+
+.ws-properties-select:hover {
+  border-color: var(--ws-border-hover);
+}
+
+.ws-properties-button {
+  padding: var(--ws-space-2) var(--ws-space-4);
+  background: var(--ws-button-background);
+  border: 1px solid var(--ws-border-main);
+  border-radius: var(--ws-radius-2);
+  color: var(--ws-text-primary);
+  font-size: var(--ws-font-size-3);
+  font-weight: var(--ws-font-weight-medium);
+  cursor: pointer;
+  transition: all var(--ws-transition-fast);
+}
+
+.ws-properties-button:hover {
+  background: var(--ws-button-background-hover);
+  border-color: var(--ws-border-hover);
+}
+
+.ws-properties-button:active {
+  background: var(--ws-button-background-active);
+}
+
+.ws-properties-button-primary {
+  background: var(--ws-accent-blue);
+  border-color: var(--ws-accent-blue);
+  color: white;
+}
+
+.ws-properties-button-primary:hover {
+  background: var(--ws-accent-blue-hover);
+  border-color: var(--ws-accent-blue-hover);
+}
+
+.ws-properties-button-primary:active {
+  background: var(--ws-accent-blue-active);
+  border-color: var(--ws-accent-blue-active);
+}
+
+.ws-properties-empty {
+  padding: var(--ws-space-8) var(--ws-space-4);
+  text-align: center;
+  color: var(--ws-text-tertiary);
+  font-size: var(--ws-font-size-2);
+}
+
+.ws-properties-divider {
+  height: 1px;
+  background: var(--ws-border-main);
+  margin: var(--ws-space-4) 0;
+}
+
+/* Color picker */
+.ws-properties-color-picker {
+  display: flex;
+  gap: var(--ws-space-2);
+  align-items: center;
+}
+
+.ws-properties-color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ws-radius-2);
+  border: 1px solid var(--ws-border-main);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background: 
+    linear-gradient(45deg, var(--ws-border-main) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--ws-border-main) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--ws-border-main) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--ws-border-main) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
+.ws-properties-color-swatch-inner {
+  position: absolute;
+  inset: 0;
+}
+
+/* Number input with stepper */
+.ws-properties-number-input {
+  display: flex;
+  position: relative;
+}
+
+.ws-properties-number-input input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ws-properties-number-input input[type="number"]::-webkit-outer-spin-button,
+.ws-properties-number-input input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.ws-properties-stepper {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  bottom: 1px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-properties-stepper-button {
+  flex: 1;
+  width: 20px;
+  padding: 0;
+  background: var(--ws-background-surface);
+  border: none;
+  border-left: 1px solid var(--ws-input-border);
+  color: var(--ws-text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all var(--ws-transition-fast);
+}
+
+.ws-properties-stepper-button:hover {
+  background: var(--ws-background-surface-hover);
+  color: var(--ws-text-primary);
+}
+
+.ws-properties-stepper-button:first-child {
+  border-top-right-radius: var(--ws-radius-2);
+  border-bottom: 1px solid var(--ws-input-border);
+}
+
+.ws-properties-stepper-button:last-child {
+  border-bottom-right-radius: var(--ws-radius-2);
+}
+

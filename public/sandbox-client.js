@@ -71,6 +71,10 @@
         handleRestartAnimation(message);
         break;
 
+      case 'TWEAK_ANIMATION':
+        handleTweakAnimation(message);
+        break;
+
       default:
         console.warn('[Sandbox Client] Unknown message type:', message.type);
     }
@@ -704,6 +708,24 @@
           message: error.message
         }
       });
+    }
+  }
+
+  /**
+   * Handle real-time property tweaking from the properties panel
+   * Uses gsap.set() to instantly apply changes as the user adjusts sliders
+   */
+  async function handleTweakAnimation(message) {
+    const { selector, properties } = message.payload;
+    
+    try {
+      // Ensure GSAP is loaded
+      const gsap = await ensureGsapIsLoaded();
+      
+      // Instantly apply the property changes
+      gsap.set(selector, properties);
+    } catch (error) {
+      console.error('[Sandbox Client] Error tweaking animation:', error);
     }
   }
 

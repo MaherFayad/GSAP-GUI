@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GSAP Animation CDN Example</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+
+    .animation-stage {
+      background: white;
+      border-radius: 20px;
+      padding: 60px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      margin-bottom: 30px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .box {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .controls {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .controls h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .info {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    .info h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .info ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .info li {
+      padding: 5px 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .info li strong {
+      color: #333;
+    }
+
+    .status {
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .status.loading {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    code {
+      background: #333;
+      color: #00ff00;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 GSAP Animation CDN</h1>
+      <p>Load animations directly from Supabase Edge Functions</p>
+    </div>
+
+    <div id="status" class="status loading">
+      Loading animations...
+    </div>
+
+    <div class="animation-stage">
+      <div class="box">Box</div>
+    </div>
+
+    <div class="controls">
+      <h2>Animation Controls</h2>
+      
+      <div class="button-group" id="animationButtons">
+        <!-- Buttons will be dynamically added here -->
+      </div>
+
+      <div class="info">
+        <h3>📦 Loaded Animations:</h3>
+        <ul id="animationList">
+          <li>Loading...</li>
+        </ul>
+      </div>
+
+      <div class="info">
+        <h3>🔧 How it works:</h3>
+        <ul>
+          <li><strong>1.</strong> Animations are stored in Supabase as JSON</li>
+          <li><strong>2.</strong> Edge Function transpiles them to JavaScript</li>
+          <li><strong>3.</strong> Served with <code>Cache-Control: immutable</code></li>
+          <li><strong>4.</strong> Available globally via <code>window.GSAPAnimations</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Load GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+  <!-- Step 2: Load Animations from CDN -->
+  <!-- 
+    🚨 IMPORTANT: Replace YOUR_PROJECT_ID with your actual Supabase project ID
+    Get your project_id from the database or Supabase dashboard
+  -->
+  <script>
+    // Configuration
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // e.g., 'https://xxxxx.supabase.co'
+    const PROJECT_ID = 'YOUR_PROJECT_ID'; // UUID of your project
+
+    // Load the animation module
+    const script = document.createElement('script');
+    script.src = `${SUPABASE_URL}/functions/v1/get-animation-cdn?project_id=${PROJECT_ID}`;
+    
+    script.onload = function() {
+      console.log('✅ Animations loaded successfully!');
+      initializeAnimations();
+    };
+    
+    script.onerror = function() {
+      console.error('❌ Failed to load animations');
+      showStatus('error', 'Failed to load animations. Please check your configuration.');
+    };
+    
+    document.head.appendChild(script);
+  </script>
+
+  <!-- Step 3: Use the animations -->
+  <script>
+    function showStatus(type, message) {
+      const statusEl = document.getElementById('status');
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+    }
+
+    function initializeAnimations() {
+      // Check if animations are loaded
+      if (typeof GSAPAnimations === 'undefined') {
+        showStatus('error', '❌ GSAPAnimations not found');
+        return;
+      }
+
+      // Get list of available animations
+      const animations = GSAPAnimations.list();
+      
+      if (animations.length === 0) {
+        showStatus('error', '⚠️ No animations found for this project');
+        return;
+      }
+
+      showStatus('success', `✅ Loaded ${animations.length} animation(s)`);
+
+      // Display animation list
+      const listEl = document.getElementById('animationList');
+      listEl.innerHTML = animations.map(anim => 
+        `<li><strong>${anim.name}</strong> <code>${anim.id}</code></li>`
+      ).join('');
+
+      // Create buttons for each animation
+      const buttonsEl = document.getElementById('animationButtons');
+      buttonsEl.innerHTML = animations.map(anim => {
+        const functionName = anim.name.replace(/[^a-zA-Z0-9_]/g, '_').replace(/^[0-9]/, '_$&');
+        return `<button onclick="playAnimation('${anim.name}')">${anim.name}</button>`;
+      }).join('');
+
+      // Add control buttons
+      buttonsEl.innerHTML += `
+        <button onclick="pauseAll()">⏸️ Pause All</button>
+        <button onclick="resumeAll()">▶️ Resume All</button>
+        <button onclick="killAll()">⏹️ Stop All</button>
+      `;
+
+      // Auto-play the first animation
+      if (animations.length > 0) {
+        setTimeout(() => {
+          playAnimation(animations[0].name);
+        }, 500);
+      }
+    }
+
+    // Global timeline reference
+    let currentTimeline = null;
+
+    function playAnimation(name) {
+      console.log('Playing animation:', name);
+      
+      // Kill previous animation
+      if (currentTimeline) {
+        currentTimeline.kill();
+      }
+
+      // Play new animation
+      currentTimeline = GSAPAnimations.play(name);
+      
+      if (currentTimeline) {
+        console.log('✅ Animation started:', name);
+      } else {
+        console.error('❌ Animation not found:', name);
+      }
+    }
+
+    function pauseAll() {
+      if (currentTimeline) {
+        currentTimeline.pause();
+        console.log('⏸️ Animation paused');
+      }
+    }
+
+    function resumeAll() {
+      if (currentTimeline) {
+        currentTimeline.resume();
+        console.log('▶️ Animation resumed');
+      }
+    }
+
+    function killAll() {
+      if (currentTimeline) {
+        currentTimeline.kill();
+        currentTimeline = null;
+        console.log('⏹️ Animation stopped');
+        
+        // Reset box position
+        gsap.set('.box', { clearProps: 'all' });
+      }
+    }
+  </script>
+</body>
+</html>
+

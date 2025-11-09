@@ -17,5 +17,9 @@ export const clamp = (value: number, min: number, max: number): number => {
 // Export Supabase client
 export { supabase } from './supabaseClient';
 
+// Export transpilers
+export { convertJsonToGsapString } from './transpileToString';
+export { generateReactComponent, generateReactComponentWithRef } from './transpileToReact';
+
 // Add more utility functions as needed
 

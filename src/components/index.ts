@@ -9,6 +9,10 @@ export { PropertiesPanel } from './PropertiesPanel';
 export { LayerTree } from './LayerPanel';
 export { TimelineEditor } from './TimelineEditor';
 export { StateMachineEditor } from './StateMachineEditor';
+export { EditorLayout } from './ResizablePanels';
+export { Canvas } from './Canvas';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+export { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarGroup, ToolbarTitle } from './Toolbar';
 
 // Add more component exports as needed
 

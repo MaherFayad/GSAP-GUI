@@ -6,7 +6,7 @@ interface ResizablePanelsProps {
 }
 
 export const ResizablePanels: React.FC<ResizablePanelsProps> = ({ children }) => {
-  return <div className="ws-resizable-container">{children}</div>;
+  return <div className="resizable-container">{children}</div>;
 };
 
 interface PanelProps {
@@ -28,7 +28,7 @@ export const Panel: React.FC<PanelProps> = ({
   
   return (
     <div 
-      className={`ws-panel ${className}`}
+      className={`panel ${className}`}
       style={{ 
         width: size ? `${size}px` : 'auto',
         minWidth: `${minSize}px`,
@@ -91,14 +91,16 @@ export const PanelResizer: React.FC<PanelResizerProps> = ({
     };
   }, [isDragging, direction, onResize]);
   
+  const ariaOrientation = direction === 'horizontal' ? 'horizontal' : 'vertical';
+  
   return (
     <div 
-      className={`ws-panel-resizer ws-panel-resizer-${direction} ${isDragging ? 'dragging' : ''}`}
+      className={`panel-resizer panel-resizer-${direction} ${isDragging ? 'dragging' : ''}`}
       onMouseDown={handleMouseDown}
       role="separator"
-      aria-orientation={direction}
+      aria-orientation={ariaOrientation}
     >
-      <div className="ws-panel-resizer-handle" />
+      <div className="panel-resizer-handle" />
     </div>
   );
 };
@@ -135,15 +137,15 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
   };
   
   return (
-    <div className="ws-editor-layout">
-      {header && <div className="ws-editor-header">{header}</div>}
+    <div className="editor-layout">
+      {header && <div className="editor-header">{header}</div>}
       
-      <div className="ws-editor-main">
+      <div className="editor-main">
         {/* Left Panel */}
         {leftPanel && (
           <>
             <div 
-              className="ws-panel ws-panel-left" 
+              className="panel panel-left" 
               style={{ width: `${leftPanelWidth}px` }}
             >
               {leftPanel}
@@ -153,8 +155,8 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
         )}
         
         {/* Center Area (Canvas + Bottom Panel) */}
-        <div className="ws-editor-center">
-          <div className="ws-editor-canvas-area">
+        <div className="editor-center">
+          <div className="editor-canvas-area">
             {canvas}
           </div>
           
@@ -162,7 +164,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
             <>
               <PanelResizer direction="vertical" onResize={handleBottomResize} />
               <div 
-                className="ws-panel ws-panel-bottom"
+                className="panel panel-bottom"
                 style={{ height: `${bottomPanelHeight}px` }}
               >
                 {bottomPanel}
@@ -176,7 +178,7 @@ export const EditorLayout: React.FC<EditorLayoutProps> = ({
           <>
             <PanelResizer direction="horizontal" onResize={handleRightResize} />
             <div 
-              className="ws-panel ws-panel-right"
+              className="panel panel-right"
               style={{ width: `${rightPanelWidth}px` }}
             >
               {rightPanel}

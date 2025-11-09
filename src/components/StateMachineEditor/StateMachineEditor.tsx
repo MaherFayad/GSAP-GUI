@@ -10,6 +10,7 @@ import ReactFlow, {
   BackgroundVariant,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import './StateMachineEditor.css';
 import type { AnimationData } from '../../types';
 
 interface StateMachineEditorProps {
@@ -104,95 +105,48 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: '#1a1a1a' }}>
+    <div className="state-machine-editor">
       {/* Sidebar */}
-      <div
-        style={{
-          width: '200px',
-          background: '#252525',
-          borderRight: '1px solid #444',
-          padding: '15px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-        }}
-      >
-        <h3 style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#fff', fontWeight: 'bold' }}>
-          Add Nodes
-        </h3>
+      <div className="state-machine-sidebar">
+        <div className="state-machine-sidebar-header">
+          <div className="state-machine-sidebar-title">Add Nodes</div>
+        </div>
         
-        <button
-          onClick={addStateNode}
-          style={{
-            padding: '10px',
-            background: '#27ae60',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '5px',
-          }}
-        >
-          <span>+</span> State Node
-        </button>
+        <div className="state-machine-sidebar-content">
+          <button className="state-machine-node-btn state" onClick={addStateNode}>
+            <span>+</span> State Node
+          </button>
 
-        <button
-          onClick={addTriggerNode}
-          style={{
-            padding: '10px',
-            background: '#e74c3c',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '5px',
-          }}
-        >
-          <span>+</span> Trigger Node
-        </button>
+          <button className="state-machine-node-btn trigger" onClick={addTriggerNode}>
+            <span>+</span> Trigger Node
+          </button>
 
-        <div style={{ borderTop: '1px solid #444', margin: '10px 0' }} />
+          <div className="state-machine-divider" />
 
-        <button
-          onClick={clearWorkflow}
-          style={{
-            padding: '8px',
-            background: 'transparent',
-            color: '#888',
-            border: '1px solid #555',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-          }}
-        >
-          Clear Workflow
-        </button>
+          <button className="state-machine-clear-btn" onClick={clearWorkflow}>
+            Clear Workflow
+          </button>
+        </div>
 
-        <div style={{ marginTop: 'auto', padding: '10px 0', fontSize: '11px', color: '#666' }}>
-          <p style={{ margin: '0 0 5px 0' }}>
-            <strong style={{ color: '#3498db' }}>Start:</strong> Entry point
-          </p>
-          <p style={{ margin: '0 0 5px 0' }}>
-            <strong style={{ color: '#27ae60' }}>State:</strong> Animation action
-          </p>
-          <p style={{ margin: '0' }}>
-            <strong style={{ color: '#e74c3c' }}>Trigger:</strong> Event listener
-          </p>
+        <div className="state-machine-legend">
+          <div className="state-machine-legend-title">Legend</div>
+          <div className="state-machine-legend-item">
+            <div className="state-machine-legend-dot start" />
+            <span>Start: Entry point</span>
+          </div>
+          <div className="state-machine-legend-item">
+            <div className="state-machine-legend-dot state" />
+            <span>State: Animation action</span>
+          </div>
+          <div className="state-machine-legend-item">
+            <div className="state-machine-legend-dot trigger" />
+            <span>Trigger: Event listener</span>
+          </div>
         </div>
       </div>
 
       {/* React Flow Canvas */}
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div className="state-machine-canvas">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -200,41 +154,19 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = ({
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           fitView
-          style={{ background: '#1a1a1a' }}
         >
-          <Controls
-            style={{
-              background: '#252525',
-              border: '1px solid #444',
-            }}
-          />
+          <Controls />
           <Background
             variant={BackgroundVariant.Dots}
             gap={16}
             size={1}
-            color="#333"
           />
         </ReactFlow>
 
         {/* Instructions Overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: 'rgba(0, 0, 0, 0.8)',
-            padding: '15px',
-            borderRadius: '4px',
-            border: '1px solid #444',
-            fontSize: '12px',
-            color: '#ccc',
-            maxWidth: '300px',
-          }}
-        >
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#fff' }}>
-            How to use:
-          </h4>
-          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+        <div className="state-machine-instructions">
+          <div className="state-machine-instructions-title">How to use</div>
+          <ul className="state-machine-instructions-list">
             <li>Click sidebar buttons to add nodes</li>
             <li>Drag nodes to reposition them</li>
             <li>Connect nodes by dragging from one handle to another</li>

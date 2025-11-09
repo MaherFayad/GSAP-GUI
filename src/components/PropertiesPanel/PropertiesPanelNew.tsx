@@ -37,11 +37,10 @@ export const PropertiesPanelNew = ({
   // Section expansion states
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     transform: true,
-    style: true,
-    animation: true
+    style: true
   });
 
-  // Real-time "tweak" - send updates to sandbox
+  // Real-time "tweak" - send updates to sandbox AND auto-record keyframe
   useEffect(() => {
     if (!selectedElement) return;
 
@@ -49,21 +48,16 @@ export const PropertiesPanelNew = ({
       x, y, scale, rotation, opacity, backgroundColor, color
     };
 
+    // Send immediate visual update to sandbox
     sendMessage('TWEAK_ANIMATION', {
       selector: selectedElement,
       properties: values
     });
-  }, [x, y, scale, rotation, opacity, backgroundColor, color, selectedElement, sendMessage]);
 
-  // Handle adding a keyframe
-  const handleAddKeyframe = () => {
-    if (!selectedElement) return;
-
+    // Auto-record keyframe when properties change
     const activeTimelineId = animationData.activeTimelineId || 'default';
     
-    const properties: TweenProperties = {
-      x, y, scale, rotation, opacity, backgroundColor, color
-    };
+    const properties: TweenProperties = values;
 
     const newKeyframe = {
       id: `keyframe-${Date.now()}`,
@@ -78,13 +72,24 @@ export const PropertiesPanelNew = ({
       const existingTimeline = prevData.timelines[activeTimelineId];
       
       if (existingTimeline) {
+        // Check if a keyframe already exists at this time for this element
+        const existingKeyframeIndex = existingTimeline.keyframes.findIndex(
+          kf => kf.time === currentTime && kf.selector === selectedElement
+        );
+
+        const updatedKeyframes = existingKeyframeIndex >= 0
+          ? existingTimeline.keyframes.map((kf, idx) => 
+              idx === existingKeyframeIndex ? newKeyframe : kf
+            )
+          : [...existingTimeline.keyframes, newKeyframe];
+
         return {
           ...prevData,
           timelines: {
             ...prevData.timelines,
             [activeTimelineId]: {
               ...existingTimeline,
-              keyframes: [...existingTimeline.keyframes, newKeyframe]
+              keyframes: updatedKeyframes
             }
           }
         };
@@ -103,9 +108,7 @@ export const PropertiesPanelNew = ({
         };
       }
     });
-
-    console.log('[PropertiesPanel] Added keyframe:', newKeyframe);
-  };
+  }, [x, y, scale, rotation, opacity, backgroundColor, color, selectedElement, sendMessage, currentTime, animationData.activeTimelineId, setAnimationData]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => ({
@@ -116,8 +119,8 @@ export const PropertiesPanelNew = ({
 
   if (!selectedElement) {
     return (
-      <div className="ws-properties-panel">
-        <div className="ws-properties-empty">
+      <div className="properties-panel">
+        <div className="properties-empty">
           <p>Select an element to edit its properties</p>
         </div>
       </div>
@@ -129,14 +132,14 @@ export const PropertiesPanelNew = ({
       title: 'Transform',
       defaultExpanded: true,
       content: (
-        <div className="ws-properties-section-content">
-          <div className="ws-properties-row">
-            <label className="ws-properties-label">Position</label>
-            <div className="ws-properties-input-group">
+        <div className="properties-section-content">
+          <div className="properties-row">
+            <label className="properties-label">Position</label>
+            <div className="properties-input-group">
               <div style={{ flex: 1 }}>
                 <input
                   type="number"
-                  className="ws-properties-input"
+                  className="properties-input"
                   value={x}
                   onChange={(e) => setX(Number(e.target.value))}
                   placeholder="X"
@@ -145,7 +148,7 @@ export const PropertiesPanelNew = ({
               <div style={{ flex: 1 }}>
                 <input
                   type="number"
-                  className="ws-properties-input"
+                  className="properties-input"
                   value={y}
                   onChange={(e) => setY(Number(e.target.value))}
                   placeholder="Y"
@@ -154,31 +157,33 @@ export const PropertiesPanelNew = ({
             </div>
           </div>
 
-          <div className="ws-properties-row">
-            <label className="ws-properties-label">Scale</label>
+          <div className="properties-row">
+            <label className="properties-label">Scale</label>
             <input
               type="number"
-              className="ws-properties-input"
+              className="properties-input"
               value={scale}
               onChange={(e) => setScale(Number(e.target.value))}
               step="0.01"
               min="0"
               max="3"
+              aria-label="Scale"
             />
           </div>
 
-          <div className="ws-properties-row">
-            <label className="ws-properties-label">Rotation</label>
+          <div className="properties-row">
+            <label className="properties-label">Rotation</label>
             <div style={{ display: 'flex' }}>
               <input
                 type="number"
-                className="ws-properties-input"
+                className="properties-input"
                 value={rotation}
                 onChange={(e) => setRotation(Number(e.target.value))}
                 step="1"
-                style={{ borderRadius: 'var(--ws-radius-2) 0 0 var(--ws-radius-2)' }}
+                style={{ borderRadius: 'var(--radius-2) 0 0 var(--radius-2)' }}
+                aria-label="Rotation"
               />
-              <div className="ws-properties-unit">deg</div>
+              <div className="properties-unit">deg</div>
             </div>
           </div>
         </div>
@@ -188,32 +193,33 @@ export const PropertiesPanelNew = ({
       title: 'Style',
       defaultExpanded: true,
       content: (
-        <div className="ws-properties-section-content">
-          <div className="ws-properties-row">
-            <label className="ws-properties-label">Opacity</label>
+        <div className="properties-section-content">
+          <div className="properties-row">
+            <label className="properties-label">Opacity</label>
             <input
               type="number"
-              className="ws-properties-input"
+              className="properties-input"
               value={opacity}
               onChange={(e) => setOpacity(Number(e.target.value))}
               step="0.01"
               min="0"
               max="1"
+              aria-label="Opacity"
             />
           </div>
 
-          <div className="ws-properties-row">
-            <label className="ws-properties-label">Background</label>
-            <div className="ws-properties-color-picker">
-              <div className="ws-properties-color-swatch">
+          <div className="properties-row">
+            <label className="properties-label">Background</label>
+            <div className="properties-color-picker">
+              <div className="properties-color-swatch">
                 <div 
-                  className="ws-properties-color-swatch-inner"
+                  className="properties-color-swatch-inner"
                   style={{ background: backgroundColor }}
                 />
               </div>
               <input
                 type="text"
-                className="ws-properties-input"
+                className="properties-input"
                 value={backgroundColor}
                 onChange={(e) => setBackgroundColor(e.target.value)}
                 placeholder="#000000"
@@ -221,18 +227,18 @@ export const PropertiesPanelNew = ({
             </div>
           </div>
 
-          <div className="ws-properties-row">
-            <label className="ws-properties-label">Color</label>
-            <div className="ws-properties-color-picker">
-              <div className="ws-properties-color-swatch">
+          <div className="properties-row">
+            <label className="properties-label">Color</label>
+            <div className="properties-color-picker">
+              <div className="properties-color-swatch">
                 <div 
-                  className="ws-properties-color-swatch-inner"
+                  className="properties-color-swatch-inner"
                   style={{ background: color }}
                 />
               </div>
               <input
                 type="text"
-                className="ws-properties-input"
+                className="properties-input"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
                 placeholder="#000000"
@@ -241,39 +247,24 @@ export const PropertiesPanelNew = ({
           </div>
         </div>
       )
-    },
-    {
-      title: 'Animation',
-      defaultExpanded: true,
-      content: (
-        <div className="ws-properties-section-content">
-          <button 
-            className="ws-properties-button ws-properties-button-primary"
-            onClick={handleAddKeyframe}
-            style={{ width: '100%' }}
-          >
-            Add Keyframe at {currentTime}s
-          </button>
-        </div>
-      )
     }
   ];
 
   return (
-    <div className="ws-properties-panel">
-      <div className="ws-panel-content">
+    <div className="properties-panel">
+      <div className="panel-content">
         {sections.map((section, index) => {
           const isExpanded = expandedSections[section.title.toLowerCase()];
           
           return (
-            <div key={index} className="ws-properties-section">
+            <div key={index} className="properties-section">
               <div 
-                className="ws-properties-section-header"
+                className="properties-section-header"
                 onClick={() => toggleSection(section.title.toLowerCase())}
               >
-                <div className="ws-properties-section-title">
+                <div className="properties-section-title">
                   <ChevronRightIcon 
-                    className={`ws-properties-section-icon ${isExpanded ? 'expanded' : ''}`}
+                    className={`properties-section-icon ${isExpanded ? 'expanded' : ''}`}
                   />
                   {section.title}
                 </div>

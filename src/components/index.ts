@@ -10,8 +10,7 @@ export { LayerTree, LayerPanel } from './LayerPanel';
 export { TimelineEditor } from './TimelineEditor';
 export { StateMachineEditor } from './StateMachineEditor';
 export { EditorLayout } from './ResizablePanels';
-export { Canvas, CanvasWithSelection } from './Canvas';
-export type { CanvasHandle } from './Canvas';
+export { Canvas } from './Canvas';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
 export { Toolbar, ToolbarButton, ToolbarSeparator, ToolbarGroup, ToolbarTitle } from './Toolbar';
 

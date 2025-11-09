@@ -1,0 +1,198 @@
+/* 
+ * Design Tokens
+ * Professional design system for the GSAP Editor
+ */
+
+:root {
+  /* ===== COLOR PALETTE ===== */
+  
+  /* Background Colors - Dark theme */
+  --background-canvas: #0E0E0E;
+  --background-panel: #1A1A1A;
+  --background-surface: #202020;
+  --background-surface-hover: #252525;
+  --background-surface-active: #2A2A2A;
+  --background-panel-header: #161616;
+  
+  /* Border Colors */
+  --border-main: #2D2D2D;
+  --border-hover: #3D3D3D;
+  --border-active: #4D4D4D;
+  --border-focus: #0078D4;
+  
+  /* Text Colors */
+  --text-primary: #E0E0E0;
+  --text-secondary: #A0A0A0;
+  --text-tertiary: #6B6B6B;
+  --text-disabled: #4A4A4A;
+  --text-link: #3B9EFF;
+  --text-link-hover: #5DB0FF;
+  
+  /* Accent Colors */
+  --accent-blue: #0078D4;
+  --accent-blue-hover: #1084D8;
+  --accent-blue-active: #0066B8;
+  --accent-purple: #8B5CF6;
+  --accent-green: #10B981;
+  --accent-orange: #F59E0B;
+  --accent-red: #EF4444;
+  
+  /* Selection & Highlight */
+  --selection-background: #0078D433;
+  --selection-border: #0078D4;
+  --highlight-overlay: #3B9EFF22;
+  --highlight-border: #3B9EFF;
+  
+  /* Component Specific */
+  --toolbar-background: #161616;
+  --toolbar-border: #2D2D2D;
+  --button-background: transparent;
+  --button-background-hover: #2A2A2A;
+  --button-background-active: #333333;
+  --input-background: #0E0E0E;
+  --input-border: #2D2D2D;
+  --input-border-focus: #0078D4;
+  
+  /* Canvas */
+  --canvas-background: #121212;
+  --canvas-grid: #1E1E1E;
+  --canvas-artboard: #FFFFFF;
+  
+  /* ===== SPACING SYSTEM ===== */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 24px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+  --space-11: 64px;
+  --space-12: 80px;
+  
+  /* ===== TYPOGRAPHY ===== */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", Menlo, Monaco, monospace;
+  
+  /* Font Sizes */
+  --font-size-1: 11px;
+  --font-size-2: 12px;
+  --font-size-3: 13px;
+  --font-size-4: 14px;
+  --font-size-5: 16px;
+  --font-size-6: 18px;
+  --font-size-7: 20px;
+  --font-size-8: 24px;
+  --font-size-9: 32px;
+  
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* ===== BORDER RADIUS ===== */
+  --radius-1: 2px;
+  --radius-2: 4px;
+  --radius-3: 6px;
+  --radius-4: 8px;
+  --radius-5: 12px;
+  --radius-full: 9999px;
+  
+  /* ===== SHADOWS ===== */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-3: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-4: 0 8px 16px rgba(0, 0, 0, 0.3);
+  --shadow-5: 0 16px 32px rgba(0, 0, 0, 0.4);
+  
+  /* ===== Z-INDEX SCALE ===== */
+  --z-base: 0;
+  --z-panel: 10;
+  --z-overlay: 20;
+  --z-dropdown: 30;
+  --z-tooltip: 40;
+  --z-modal: 50;
+  
+  /* ===== TRANSITIONS ===== */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ===== LAYOUT ===== */
+  --panel-width-left: 240px;
+  --panel-width-right: 280px;
+  --panel-height-bottom: 200px;
+  --toolbar-height: 48px;
+  --header-height: 48px;
+  --divider-width: 1px;
+}
+
+/* ===== GLOBAL RESETS ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-4);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+  background: var(--background-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* ===== SCROLLBAR STYLING ===== */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-panel);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: var(--radius-2);
+  border: 3px solid var(--background-panel);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-active);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--background-panel);
+}
+
+/* ===== SELECTION ===== */
+::selection {
+  background: var(--selection-background);
+  color: var(--text-primary);
+}
+
+/* ===== FOCUS VISIBLE ===== */
+*:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-offset: -2px;
+}
+

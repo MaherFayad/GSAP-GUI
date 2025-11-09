@@ -10,7 +10,7 @@ interface ToolbarProps {
 export const Toolbar: React.FC<ToolbarProps> = ({ children, className = '' }) => {
   return (
     <RadixTooltip.Provider delayDuration={400}>
-      <RadixToolbar.Root className={`ws-toolbar ${className}`}>
+      <RadixToolbar.Root className={`toolbar ${className}`}>
         {children}
       </RadixToolbar.Root>
     </RadixTooltip.Provider>
@@ -36,7 +36,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 }) => {
   const button = (
     <RadixToolbar.Button 
-      className={`ws-toolbar-button ${active ? 'active' : ''} ${className}`}
+      className={`toolbar-button ${active ? 'active' : ''} ${className}`}
       onClick={onClick}
       disabled={disabled}
       data-state={active ? 'on' : 'off'}
@@ -52,9 +52,9 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
           {button}
         </RadixTooltip.Trigger>
         <RadixTooltip.Portal>
-          <RadixTooltip.Content className="ws-tooltip-content" sideOffset={5}>
+          <RadixTooltip.Content className="tooltip-content" sideOffset={5}>
             {tooltip}
-            <RadixTooltip.Arrow className="ws-tooltip-arrow" />
+            <RadixTooltip.Arrow className="tooltip-arrow" />
           </RadixTooltip.Content>
         </RadixTooltip.Portal>
       </RadixTooltip.Root>
@@ -69,7 +69,7 @@ interface ToolbarSeparatorProps {
 }
 
 export const ToolbarSeparator: React.FC<ToolbarSeparatorProps> = ({ className = '' }) => {
-  return <RadixToolbar.Separator className={`ws-toolbar-separator ${className}`} />;
+  return <RadixToolbar.Separator className={`toolbar-separator ${className}`} />;
 };
 
 interface ToolbarGroupProps {
@@ -78,7 +78,7 @@ interface ToolbarGroupProps {
 }
 
 export const ToolbarGroup: React.FC<ToolbarGroupProps> = ({ children, className = '' }) => {
-  return <div className={`ws-toolbar-group ${className}`}>{children}</div>;
+  return <div className={`toolbar-group ${className}`}>{children}</div>;
 };
 
 interface ToolbarTitleProps {
@@ -87,6 +87,6 @@ interface ToolbarTitleProps {
 }
 
 export const ToolbarTitle: React.FC<ToolbarTitleProps> = ({ children, className = '' }) => {
-  return <div className={`ws-toolbar-title ${className}`}>{children}</div>;
+  return <div className={`toolbar-title ${className}`}>{children}</div>;
 };
 

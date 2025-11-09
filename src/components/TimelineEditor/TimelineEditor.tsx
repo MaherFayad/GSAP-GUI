@@ -1,18 +1,27 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { PlayIcon, PlusIcon } from '@radix-ui/react-icons';
 import type { AnimationData } from '../../types';
+import './TimelineEditor.css';
 
 interface TimelineEditorProps {
   animationData: AnimationData;
   setAnimationData: React.Dispatch<React.SetStateAction<AnimationData>>;
   sendMessage: (type: string, payload?: any) => void;
+  currentTime: number;
+  onTimeChange: (time: number) => void;
 }
 
 export const TimelineEditor: React.FC<TimelineEditorProps> = ({
   animationData,
   setAnimationData,
   sendMessage,
+  currentTime,
+  onTimeChange,
 }) => {
   const [selectedTimelineId, setSelectedTimelineId] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(100); // pixels per second
+  const [isDraggingPlayhead, setIsDraggingPlayhead] = useState(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const handleNewTimeline = () => {
     const newId = `timeline_${Date.now()}`;
@@ -57,234 +66,216 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
     }
   };
 
+  // Handle playhead dragging
+  const handlePlayheadMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingPlayhead(true);
+  };
+
+  useEffect(() => {
+    if (!isDraggingPlayhead || !canvasRef.current) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const newTime = Math.max(0, x / zoom);
+      onTimeChange(Number(newTime.toFixed(2)));
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingPlayhead(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingPlayhead, zoom, onTimeChange]);
+
   const timelineIds = Object.keys(animationData.timelines);
   const selectedTimeline = selectedTimelineId
     ? animationData.timelines[selectedTimelineId]
     : null;
 
+  // Group keyframes by selector
+  const trackMap = new Map<string, any[]>();
+  if (selectedTimeline) {
+    selectedTimeline.keyframes?.forEach((keyframe) => {
+      const selector = keyframe.selector || 'Unknown';
+      if (!trackMap.has(selector)) {
+        trackMap.set(selector, []);
+      }
+      trackMap.get(selector)!.push(keyframe);
+    });
+  }
+
+  // Generate time ruler ticks
+  const maxTime = 10; // seconds
+  const ticks = [];
+  for (let i = 0; i <= maxTime; i++) {
+    ticks.push(i);
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', color: '#fff' }}>
-      {/* Toolbar */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '10px',
-          padding: '10px',
-          background: '#1e1e1e',
-          borderBottom: '1px solid #444',
-          alignItems: 'center',
-        }}
-      >
-        <button
-          onClick={handleNewTimeline}
-          style={{
-            padding: '8px 16px',
-            background: '#3498db',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 'bold',
-          }}
-        >
-          + New Timeline
-        </button>
-        <button
-          onClick={handlePlayTimeline}
-          disabled={!selectedTimelineId}
-          style={{
-            padding: '8px 16px',
-            background: selectedTimelineId ? '#27ae60' : '#555',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: selectedTimelineId ? 'pointer' : 'not-allowed',
-            fontSize: '13px',
-            fontWeight: 'bold',
-          }}
-        >
-          ▶ Play
-        </button>
-        {selectedTimeline && (
-          <span style={{ fontSize: '13px', color: '#888', marginLeft: '10px' }}>
-            Selected: <strong style={{ color: '#3498db' }}>{selectedTimeline.name}</strong>
-          </span>
-        )}
+    <div className="timeline-editor">
+      {/* Timeline Header */}
+      <div className="timeline-header">
+        <span className="timeline-header-title">Timeline</span>
+        <div className="timeline-header-actions">
+          <button className="timeline-btn timeline-btn-primary" onClick={handleNewTimeline}>
+            <PlusIcon />
+            New Timeline
+          </button>
+          <button 
+            className="timeline-btn" 
+            onClick={handlePlayTimeline}
+            disabled={!selectedTimelineId}
+          >
+            <PlayIcon />
+            Play
+          </button>
+        </div>
       </div>
 
-      {/* Timeline List and Editor */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Timeline List */}
-        <div
-          style={{
-            width: '200px',
-            background: '#252525',
-            borderRight: '1px solid #444',
-            overflowY: 'auto',
-          }}
-        >
-          <div
-            style={{
-              padding: '10px',
-              fontSize: '12px',
-              color: '#888',
-              fontWeight: 'bold',
-              borderBottom: '1px solid #444',
-            }}
-          >
-            TIMELINES
-          </div>
+      {/* Timeline Content */}
+      <div className="timeline-content">
+        {/* Timeline Sidebar */}
+        <div className="timeline-sidebar">
+          <div className="timeline-sidebar-header">Timelines</div>
           {timelineIds.length === 0 ? (
-            <div style={{ padding: '20px', fontSize: '12px', color: '#666', textAlign: 'center' }}>
+            <div className="timeline-list-empty">
               No timelines yet.
               <br />
-              Click "New Timeline" to create one.
+              Create one to get started.
             </div>
           ) : (
-            <div style={{ padding: '5px' }}>
-              {timelineIds.map((id) => {
-                const timeline = animationData.timelines[id];
-                if (!timeline) return null;
-                const isSelected = id === selectedTimelineId;
-                return (
-                  <div
-                    key={id}
-                    onClick={() => setSelectedTimelineId(id)}
-                    style={{
-                      padding: '8px 10px',
-                      margin: '2px 0',
-                      background: isSelected ? '#3498db' : 'transparent',
-                      color: isSelected ? '#fff' : '#ccc',
-                      cursor: 'pointer',
-                      borderRadius: '4px',
-                      fontSize: '13px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isSelected) {
-                        e.currentTarget.style.background = '#333';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isSelected) {
-                        e.currentTarget.style.background = 'transparent';
-                      }
+            timelineIds.map((id) => {
+              const timeline = animationData.timelines[id];
+              if (!timeline) return null;
+              const isSelected = id === selectedTimelineId;
+              return (
+                <div
+                  key={id}
+                  className={`timeline-list-item ${isSelected ? 'active' : ''}`}
+                  onClick={() => setSelectedTimelineId(id)}
+                >
+                  <span className="timeline-list-item-name">{timeline.name}</span>
+                  <button
+                    className="timeline-list-item-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTimeline(id);
                     }}
                   >
-                    <span>{timeline.name}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTimeline(id);
-                      }}
-                      style={{
-                        padding: '2px 6px',
-                        background: 'transparent',
-                        color: '#e74c3c',
-                        border: '1px solid #e74c3c',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                        fontSize: '10px',
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+                    ×
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
 
-        {/* Timeline Editor Area */}
-        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+        {/* Timeline Canvas */}
+        <div className="timeline-canvas" ref={canvasRef}>
           {selectedTimeline ? (
-            <div>
-              <h3 style={{ margin: '0 0 20px 0', fontSize: '16px', color: '#fff' }}>
-                {selectedTimeline.name}
-              </h3>
-              
-              {/* Timeline Visualization */}
-              <div
-                style={{
-                  background: '#1e1e1e',
-                  border: '1px solid #444',
-                  borderRadius: '4px',
-                  padding: '20px',
-                  minHeight: '100px',
-                }}
-              >
-                {selectedTimeline.keyframes && selectedTimeline.keyframes.length > 0 ? (
-                  <div>
-                    <div style={{ fontSize: '12px', color: '#888', marginBottom: '10px' }}>
-                      Keyframes ({selectedTimeline.keyframes.length}):
-                    </div>
-                    {selectedTimeline.keyframes.map((keyframe, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          padding: '10px',
-                          margin: '5px 0',
-                          background: '#2a2a2a',
-                          border: '1px solid #555',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                        }}
-                      >
-                        <div style={{ color: '#3498db', fontWeight: 'bold' }}>
-                          {keyframe.selector || 'No selector'}
-                        </div>
-                        <div style={{ color: '#888', marginTop: '5px' }}>
-                          Time: {keyframe.time || 0}s | Duration: {keyframe.duration || 0}s
-                        </div>
-                        {keyframe.properties && (
-                          <div style={{ color: '#888', marginTop: '5px' }}>
-                            Properties: {Object.keys(keyframe.properties).join(', ')}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+            <>
+              {/* Time Ruler */}
+              <div className="timeline-ruler">
+                {ticks.map((tick) => (
+                  <div
+                    key={tick}
+                    className="timeline-ruler-tick"
+                    style={{ left: `${tick * zoom}px` }}
+                  >
+                    <div className="timeline-ruler-tick-line" />
+                    <div className="timeline-ruler-tick-label">{tick}s</div>
                   </div>
-                ) : (
-                  <div style={{ textAlign: 'center', color: '#666', padding: '20px' }}>
-                    <p>No keyframes in this timeline yet.</p>
-                    <p style={{ fontSize: '12px', marginTop: '10px' }}>
-                      Use the Properties Panel to add keyframes to elements.
-                    </p>
-                  </div>
-                )}
+                ))}
               </div>
 
-              {/* Timeline Info */}
+              {/* Playhead */}
               <div
-                style={{
-                  marginTop: '20px',
-                  padding: '15px',
-                  background: '#1e1e1e',
-                  border: '1px solid #444',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  color: '#888',
-                }}
+                className="timeline-playhead"
+                style={{ left: `${currentTime * zoom}px` }}
               >
-                <div style={{ marginBottom: '8px' }}>
-                  <strong style={{ color: '#fff' }}>Timeline ID:</strong> {selectedTimeline.id}
-                </div>
-                <div>
-                  <strong style={{ color: '#fff' }}>Total Keyframes:</strong>{' '}
-                  {selectedTimeline.keyframes?.length || 0}
-                </div>
+                <div
+                  className="timeline-playhead-handle"
+                  onMouseDown={handlePlayheadMouseDown}
+                />
+              </div>
+
+              {/* Tracks */}
+              <div className="timeline-tracks">
+                {trackMap.size === 0 ? (
+                  <div className="timeline-empty">
+                    <div className="timeline-empty-title">No tracks yet</div>
+                    <div className="timeline-empty-description">
+                      Select an element and adjust its properties to automatically create keyframes
+                    </div>
+                  </div>
+                ) : (
+                  Array.from(trackMap.entries()).map(([selector, keyframes]) => (
+                    <div key={selector} className="timeline-track">
+                      <div className="timeline-track-label">
+                        <div className="timeline-track-name">Element</div>
+                        <div className="timeline-track-selector">{selector}</div>
+                      </div>
+                      <div className="timeline-track-content">
+                        {/* Grid lines */}
+                        <div className="timeline-grid">
+                          {ticks.map((tick) => (
+                            <div
+                              key={tick}
+                              className="timeline-grid-line"
+                              style={{ left: `${tick * zoom}px` }}
+                            />
+                          ))}
+                        </div>
+                        
+                        {/* Keyframes */}
+                        {keyframes.map((keyframe, idx) => (
+                          <div
+                            key={idx}
+                            className="timeline-keyframe"
+                            style={{ left: `${(keyframe.time || 0) * zoom}px` }}
+                            title={`Time: ${keyframe.time}s`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="timeline-empty">
+              <div className="timeline-empty-title">No timeline selected</div>
+              <div className="timeline-empty-description">
+                Select a timeline from the list or create a new one to get started
               </div>
             </div>
-          ) : (
-            <div style={{ textAlign: 'center', color: '#666', padding: '40px' }}>
-              <p>Select a timeline from the list or create a new one.</p>
-            </div>
           )}
+        </div>
+      </div>
+
+      {/* Timeline Controls */}
+      <div className="timeline-controls">
+        <div className="timeline-time-display">{currentTime.toFixed(2)}s</div>
+        <div className="timeline-zoom-control">
+          <span className="timeline-zoom-label">Zoom:</span>
+          <input
+            type="range"
+            min="50"
+            max="200"
+            value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            style={{ width: '100px' }}
+          />
+          <span className="timeline-zoom-label">{zoom}px/s</span>
         </div>
       </div>
     </div>

@@ -1,11 +1,13 @@
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Sandbox,
+  Sandbox, 
+  HighlightOverlay, 
+  InspectorOverlay,
   TimelineEditor,
   StateMachineEditor,
   EditorLayout,
-  CanvasWithSelection,
+  Canvas,
   Tabs,
   TabsList,
   TabsTrigger,
@@ -50,7 +52,7 @@ export const EditorPageNew = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null!);
   const [isSandboxReady, setIsSandboxReady] = useState(false);
   const [highlightBox, setHighlightBox] = useState<HighlightBox | null>(null);
-  const [isInspectorActive, setIsInspectorActive] = useState(false); // Start with inspector off
+  const [isInspectorActive, setIsInspectorActive] = useState(true);
   const [selectedSelector, setSelectedSelector] = useState<string | null>(null);
   const [domTree, setDomTree] = useState<SerializedNode | null>(null);
   const [animationData, setAnimationData] = useState<AnimationData>({ 
@@ -58,6 +60,7 @@ export const EditorPageNew = () => {
   });
   const [activeTab, setActiveTab] = useState('timelines');
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
   const sendMessage = usePostMessage(iframeRef);
   const intervalRef = useRef<number | null>(null);
 
@@ -170,6 +173,12 @@ export const EditorPageNew = () => {
 </html>
   `.trim();
 
+  // Get iframe rect for positioning the highlight overlay
+  const iframeRect = iframeRef.current ? {
+    top: iframeRef.current.getBoundingClientRect().top,
+    left: iframeRef.current.getBoundingClientRect().left
+  } : null;
+
   // Toolbar header
   const header = (
     <Toolbar>
@@ -211,17 +220,17 @@ export const EditorPageNew = () => {
       
       {isSandboxReady && (
         <div style={{ 
-          fontSize: 'var(--ws-font-size-2)', 
-          color: 'var(--ws-accent-green)',
+          fontSize: 'var(--font-size-2)', 
+          color: 'var(--accent-green)',
           display: 'flex',
           alignItems: 'center',
-          gap: 'var(--ws-space-2)'
+          gap: 'var(--space-2)'
         }}>
           <div style={{ 
             width: '6px', 
             height: '6px', 
             borderRadius: '50%', 
-            background: 'var(--ws-accent-green)' 
+            background: 'var(--accent-green)' 
           }} />
           Ready
         </div>
@@ -229,13 +238,13 @@ export const EditorPageNew = () => {
       
       {selectedSelector && (
         <div style={{ 
-          fontSize: 'var(--ws-font-size-2)', 
-          color: 'var(--ws-text-secondary)',
-          fontFamily: 'var(--ws-font-mono)',
-          background: 'var(--ws-background-surface)',
-          padding: 'var(--ws-space-2) var(--ws-space-3)',
-          borderRadius: 'var(--ws-radius-2)',
-          border: '1px solid var(--ws-border-main)'
+          fontSize: 'var(--font-size-2)', 
+          color: 'var(--text-secondary)',
+          fontFamily: 'var(--font-mono)',
+          background: 'var(--background-surface)',
+          padding: 'var(--space-2) var(--space-3)',
+          borderRadius: 'var(--radius-2)',
+          border: '1px solid var(--border-main)'
         }}>
           {selectedSelector}
         </div>
@@ -252,8 +261,8 @@ export const EditorPageNew = () => {
   // Left panel - Layers
   const leftPanel = (
     <>
-      <div className="ws-panel-header">
-        <h3 className="ws-panel-title">Layers</h3>
+      <div className="panel-header">
+        <h3 className="panel-title">Layers</h3>
       </div>
       <LayerPanel 
         node={domTree} 
@@ -269,15 +278,15 @@ export const EditorPageNew = () => {
   // Right panel - Properties
   const rightPanel = (
     <>
-      <div className="ws-panel-header">
-        <h3 className="ws-panel-title">Properties</h3>
+      <div className="panel-header">
+        <h3 className="panel-title">Properties</h3>
       </div>
       <PropertiesPanelNew
         selectedElement={selectedSelector}
         sendMessage={sendMessage}
         animationData={animationData}
         setAnimationData={setAnimationData}
-        currentTime={0}
+        currentTime={currentTime}
       />
     </>
   );
@@ -295,6 +304,8 @@ export const EditorPageNew = () => {
           animationData={animationData}
           setAnimationData={setAnimationData}
           sendMessage={sendMessage}
+          currentTime={currentTime}
+          onTimeChange={setCurrentTime}
         />
       </TabsContent>
       
@@ -308,30 +319,11 @@ export const EditorPageNew = () => {
     </Tabs>
   );
 
-  // Handle inspector interactions
-  const handleInspectorMove = (coords: { x: number; y: number }) => {
-    if (isSandboxReady) {
-      sendMessage('INSPECT_ELEMENT_AT', coords);
-    }
-  };
-
-  const handleInspectorClick = (coords: { x: number; y: number }) => {
-    if (isSandboxReady) {
-      console.log('[EditorPage] Selecting element at:', coords);
-      sendMessage('SELECT_ELEMENT_AT', coords);
-    }
-  };
-
   // Canvas with sandbox
   const canvas = (
-    <CanvasWithSelection
-      highlightBox={highlightBox}
-      isInspectorActive={isInspectorActive && isSandboxReady}
-      onInspectorMove={handleInspectorMove}
-      onInspectorClick={handleInspectorClick}
-    >
+    <Canvas>
       <div 
-        className="ws-canvas-artboard"
+        className="canvas-artboard"
         style={{
           width: '1200px',
           height: '800px',
@@ -344,8 +336,17 @@ export const EditorPageNew = () => {
           srcDoc={sampleHTML}
           onLoad={onLoad}
         />
+        
+        {isInspectorActive && isSandboxReady && (
+          <InspectorOverlay iframeRef={iframeRef} />
+        )}
+        
+        <HighlightOverlay 
+          highlightBox={highlightBox}
+          iframeRect={iframeRect}
+        />
       </div>
-    </CanvasWithSelection>
+    </Canvas>
   );
 
   return (

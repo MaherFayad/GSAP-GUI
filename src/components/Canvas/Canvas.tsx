@@ -73,13 +73,13 @@ export const Canvas: React.FC<CanvasProps> = ({ children }) => {
   };
 
   return (
-    <div className="ws-canvas-container" ref={canvasRef}>
+    <div className="canvas-container" ref={canvasRef}>
       {/* Canvas Grid Background */}
-      <div className="ws-canvas-grid" />
+      <div className="canvas-grid" />
       
       {/* Canvas Content */}
       <div
-        className={`ws-canvas-viewport ${isPanning ? 'panning' : ''}`}
+        className={`canvas-viewport ${isPanning ? 'panning' : ''}`}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -88,7 +88,7 @@ export const Canvas: React.FC<CanvasProps> = ({ children }) => {
       >
         <div
           ref={contentRef}
-          className="ws-canvas-content"
+          className="canvas-content"
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           }}
@@ -98,10 +98,10 @@ export const Canvas: React.FC<CanvasProps> = ({ children }) => {
       </div>
       
       {/* Canvas Controls */}
-      <div className="ws-canvas-controls">
-        <div className="ws-canvas-controls-group">
+      <div className="canvas-controls">
+        <div className="canvas-controls-group">
           <button
-            className="ws-canvas-control-button"
+            className="canvas-control-button"
             onClick={handleZoomOut}
             title="Zoom Out (Ctrl + -)"
           >
@@ -109,7 +109,7 @@ export const Canvas: React.FC<CanvasProps> = ({ children }) => {
           </button>
           
           <button
-            className="ws-canvas-control-button ws-canvas-zoom-display"
+            className="canvas-control-button canvas-zoom-display"
             onClick={handleReset}
             title="Reset Zoom"
           >
@@ -117,7 +117,7 @@ export const Canvas: React.FC<CanvasProps> = ({ children }) => {
           </button>
           
           <button
-            className="ws-canvas-control-button"
+            className="canvas-control-button"
             onClick={handleZoomIn}
             title="Zoom In (Ctrl + +)"
           >
@@ -125,11 +125,11 @@ export const Canvas: React.FC<CanvasProps> = ({ children }) => {
           </button>
         </div>
         
-        <div className="ws-canvas-controls-divider" />
+        <div className="canvas-controls-divider" />
         
-        <div className="ws-canvas-controls-group">
+        <div className="canvas-controls-group">
           <button
-            className="ws-canvas-control-button"
+            className="canvas-control-button"
             onClick={handleZoomToFit}
             title="Zoom to Fit"
           >
@@ -139,16 +139,16 @@ export const Canvas: React.FC<CanvasProps> = ({ children }) => {
       </div>
       
       {/* Canvas Info */}
-      <div className="ws-canvas-info">
-        <span className="ws-canvas-info-item">
+      <div className="canvas-info">
+        <span className="canvas-info-item">
           Pan: {Math.round(pan.x)}, {Math.round(pan.y)}
         </span>
-        <span className="ws-canvas-info-divider">•</span>
-        <span className="ws-canvas-info-item">
+        <span className="canvas-info-divider">•</span>
+        <span className="canvas-info-item">
           Hold Shift or middle-click to pan
         </span>
-        <span className="ws-canvas-info-divider">•</span>
-        <span className="ws-canvas-info-item">
+        <span className="canvas-info-divider">•</span>
+        <span className="canvas-info-item">
           Ctrl + Scroll to zoom
         </span>
       </div>

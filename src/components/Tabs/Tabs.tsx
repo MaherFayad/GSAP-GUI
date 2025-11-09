@@ -18,7 +18,7 @@ export const Tabs: React.FC<TabsProps> = ({
 }) => {
   return (
     <RadixTabs.Root 
-      className={`ws-tabs ${className}`}
+      className={`tabs ${className}`}
       defaultValue={defaultValue}
       value={value}
       onValueChange={onValueChange}
@@ -35,7 +35,7 @@ interface TabsListProps {
 
 export const TabsList: React.FC<TabsListProps> = ({ children, className = '' }) => {
   return (
-    <RadixTabs.List className={`ws-tabs-list ${className}`}>
+    <RadixTabs.List className={`tabs-list ${className}`}>
       {children}
     </RadixTabs.List>
   );
@@ -49,7 +49,7 @@ interface TabsTriggerProps {
 
 export const TabsTrigger: React.FC<TabsTriggerProps> = ({ value, children, className = '' }) => {
   return (
-    <RadixTabs.Trigger className={`ws-tabs-trigger ${className}`} value={value}>
+    <RadixTabs.Trigger className={`tabs-trigger ${className}`} value={value}>
       {children}
     </RadixTabs.Trigger>
   );
@@ -63,7 +63,7 @@ interface TabsContentProps {
 
 export const TabsContent: React.FC<TabsContentProps> = ({ value, children, className = '' }) => {
   return (
-    <RadixTabs.Content className={`ws-tabs-content ${className}`} value={value}>
+    <RadixTabs.Content className={`tabs-content ${className}`} value={value}>
       {children}
     </RadixTabs.Content>
   );

@@ -1,63 +1,62 @@
-/* Webstudio-inspired Tabs Component */
 
-.ws-tabs {
+.tabs {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
 }
 
-.ws-tabs-list {
+.tabs-list {
   display: flex;
   align-items: center;
-  background: var(--ws-background-panel-header);
-  border-bottom: 1px solid var(--ws-border-main);
+  background: var(--background-panel-header);
+  border-bottom: 1px solid var(--border-main);
   padding: 0;
   flex-shrink: 0;
 }
 
-.ws-tabs-trigger {
+.tabs-trigger {
   all: unset;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--ws-space-3) var(--ws-space-5);
-  font-size: var(--ws-font-size-3);
-  font-weight: var(--ws-font-weight-medium);
-  color: var(--ws-text-secondary);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
   cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  transition: all var(--ws-transition-fast);
+  transition: all var(--transition-fast);
   border-bottom: 2px solid transparent;
   position: relative;
 }
 
-.ws-tabs-trigger:hover {
-  color: var(--ws-text-primary);
-  background: var(--ws-background-surface-hover);
+.tabs-trigger:hover {
+  color: var(--text-primary);
+  background: var(--background-surface-hover);
 }
 
-.ws-tabs-trigger[data-state='active'] {
-  color: var(--ws-text-primary);
-  border-bottom-color: var(--ws-accent-blue);
-  background: var(--ws-background-panel);
+.tabs-trigger[data-state='active'] {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent-blue);
+  background: var(--background-panel);
 }
 
-.ws-tabs-trigger:focus-visible {
-  outline: 2px solid var(--ws-border-focus);
+.tabs-trigger:focus-visible {
+  outline: 2px solid var(--border-focus);
   outline-offset: -2px;
 }
 
-.ws-tabs-content {
+.tabs-content {
   flex: 1;
   overflow: auto;
   padding: 0;
 }
 
-.ws-tabs-content:focus-visible {
+.tabs-content:focus-visible {
   outline: none;
 }
 

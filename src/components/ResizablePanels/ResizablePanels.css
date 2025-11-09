@@ -1,52 +1,51 @@
-/* Webstudio-inspired Resizable Panels */
 
-.ws-editor-layout {
+.editor-layout {
   display: flex;
   flex-direction: column;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: var(--ws-background-canvas);
+  background: var(--background-canvas);
 }
 
-.ws-editor-header {
-  height: var(--ws-header-height);
-  background: var(--ws-toolbar-background);
-  border-bottom: var(--ws-divider-width) solid var(--ws-border-main);
+.editor-header {
+  height: var(--header-height);
+  background: var(--toolbar-background);
+  border-bottom: var(--divider-width) solid var(--border-main);
   display: flex;
   align-items: center;
-  padding: 0 var(--ws-space-5);
+  padding: 0 var(--space-5);
   flex-shrink: 0;
-  z-index: var(--ws-z-panel);
+  z-index: var(--z-panel);
 }
 
-.ws-editor-main {
+.editor-main {
   display: flex;
   flex: 1;
   overflow: hidden;
   position: relative;
 }
 
-.ws-panel {
-  background: var(--ws-background-panel);
+.panel {
+  background: var(--background-panel);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.ws-panel-left {
-  border-right: var(--ws-divider-width) solid var(--ws-border-main);
+.panel-left {
+  border-right: var(--divider-width) solid var(--border-main);
 }
 
-.ws-panel-right {
-  border-left: var(--ws-divider-width) solid var(--ws-border-main);
+.panel-right {
+  border-left: var(--divider-width) solid var(--border-main);
 }
 
-.ws-panel-bottom {
-  border-top: var(--ws-divider-width) solid var(--ws-border-main);
+.panel-bottom {
+  border-top: var(--divider-width) solid var(--border-main);
 }
 
-.ws-editor-center {
+.editor-center {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -54,44 +53,44 @@
   min-width: 0;
 }
 
-.ws-editor-canvas-area {
+.editor-canvas-area {
   flex: 1;
   overflow: hidden;
   position: relative;
-  background: var(--ws-canvas-background);
+  background: var(--canvas-background);
 }
 
-.ws-panel-resizer {
+.panel-resizer {
   position: relative;
   flex-shrink: 0;
-  z-index: var(--ws-z-overlay);
+  z-index: var(--z-overlay);
 }
 
-.ws-panel-resizer-horizontal {
+.panel-resizer-horizontal {
   width: 5px;
   cursor: col-resize;
   background: transparent;
-  transition: background var(--ws-transition-fast);
+  transition: background var(--transition-fast);
 }
 
-.ws-panel-resizer-vertical {
+.panel-resizer-vertical {
   height: 5px;
   cursor: row-resize;
   background: transparent;
-  transition: background var(--ws-transition-fast);
+  transition: background var(--transition-fast);
 }
 
-.ws-panel-resizer:hover,
-.ws-panel-resizer.dragging {
-  background: var(--ws-accent-blue);
+.panel-resizer:hover,
+.panel-resizer.dragging {
+  background: var(--accent-blue);
 }
 
-.ws-panel-resizer-handle {
+.panel-resizer-handle {
   position: absolute;
   background: transparent;
 }
 
-.ws-panel-resizer-horizontal .ws-panel-resizer-handle {
+.panel-resizer-horizontal .panel-resizer-handle {
   left: 50%;
   top: 0;
   bottom: 0;
@@ -99,7 +98,7 @@
   transform: translateX(-50%);
 }
 
-.ws-panel-resizer-vertical .ws-panel-resizer-handle {
+.panel-resizer-vertical .panel-resizer-handle {
   top: 50%;
   left: 0;
   right: 0;
@@ -107,42 +106,42 @@
   transform: translateY(-50%);
 }
 
-.ws-panel-resizer:hover .ws-panel-resizer-handle,
-.ws-panel-resizer.dragging .ws-panel-resizer-handle {
-  background: var(--ws-accent-blue);
+.panel-resizer:hover .panel-resizer-handle,
+.panel-resizer.dragging .panel-resizer-handle {
+  background: var(--accent-blue);
 }
 
 /* Panel Headers */
-.ws-panel-header {
+.panel-header {
   height: 40px;
-  background: var(--ws-background-panel-header);
-  border-bottom: var(--ws-divider-width) solid var(--ws-border-main);
+  background: var(--background-panel-header);
+  border-bottom: var(--divider-width) solid var(--border-main);
   display: flex;
   align-items: center;
-  padding: 0 var(--ws-space-4);
+  padding: 0 var(--space-4);
   flex-shrink: 0;
 }
 
-.ws-panel-title {
-  font-size: var(--ws-font-size-3);
-  font-weight: var(--ws-font-weight-medium);
-  color: var(--ws-text-secondary);
+.panel-title {
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0;
 }
 
-.ws-panel-content {
+.panel-content {
   flex: 1;
   overflow: auto;
-  padding: var(--ws-space-4);
+  padding: var(--space-4);
 }
 
 /* Canvas Grid Background */
-.ws-canvas-grid {
+.canvas-grid {
   background-image: 
-    linear-gradient(var(--ws-canvas-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--ws-canvas-grid) 1px, transparent 1px);
+    linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 

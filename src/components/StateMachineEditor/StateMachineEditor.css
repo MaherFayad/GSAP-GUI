@@ -1,0 +1,202 @@
+/* State Machine Editor - Rive-inspired Design */
+
+.state-machine-editor {
+  display: flex;
+  height: 100%;
+  background: var(--background-panel);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.state-machine-sidebar {
+  width: 200px;
+  background: var(--background-surface);
+  border-right: 1px solid var(--border-main);
+  display: flex;
+  flex-direction: column;
+}
+
+.state-machine-sidebar-header {
+  padding: var(--space-4);
+  background: var(--background-panel-header);
+  border-bottom: 1px solid var(--border-main);
+}
+
+.state-machine-sidebar-title {
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-2);
+}
+
+.state-machine-sidebar-content {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.state-machine-node-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--button-background);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-2);
+  color: var(--text-primary);
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.state-machine-node-btn:hover {
+  background: var(--button-background-hover);
+  border-color: var(--border-hover);
+}
+
+.state-machine-node-btn:active {
+  background: var(--button-background-active);
+}
+
+.state-machine-node-btn.state {
+  border-left: 3px solid var(--accent-green);
+}
+
+.state-machine-node-btn.trigger {
+  border-left: 3px solid var(--accent-red);
+}
+
+.state-machine-divider {
+  height: 1px;
+  background: var(--border-main);
+  margin: var(--space-2) 0;
+}
+
+.state-machine-clear-btn {
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-2);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.state-machine-clear-btn:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.state-machine-legend {
+  margin-top: auto;
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-main);
+}
+
+.state-machine-legend-title {
+  font-size: var(--font-size-1);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-3);
+}
+
+.state-machine-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: var(--font-size-1);
+  color: var(--text-tertiary);
+}
+
+.state-machine-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.state-machine-legend-dot.start {
+  background: var(--accent-blue);
+}
+
+.state-machine-legend-dot.state {
+  background: var(--accent-green);
+}
+
+.state-machine-legend-dot.trigger {
+  background: var(--accent-red);
+}
+
+/* Canvas */
+.state-machine-canvas {
+  flex: 1;
+  position: relative;
+  background: var(--background-canvas);
+}
+
+/* Instructions Overlay */
+.state-machine-instructions {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-3);
+  padding: var(--space-5);
+  max-width: 300px;
+  z-index: var(--z-overlay);
+  backdrop-filter: blur(8px);
+}
+
+.state-machine-instructions-title {
+  font-size: var(--font-size-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.state-machine-instructions-list {
+  margin: 0;
+  padding-left: var(--space-6);
+  font-size: var(--font-size-2);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.state-machine-instructions-list li {
+  margin-bottom: var(--space-2);
+}
+
+/* React Flow Overrides */
+.state-machine-canvas .react-flow__controls {
+  background: var(--background-surface);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-2);
+}
+
+.state-machine-canvas .react-flow__controls-button {
+  background: var(--button-background);
+  border-bottom: 1px solid var(--border-main);
+  color: var(--text-primary);
+}
+
+.state-machine-canvas .react-flow__controls-button:hover {
+  background: var(--button-background-hover);
+}
+
+.state-machine-canvas .react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.state-machine-canvas .react-flow__node {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-2);
+}
+

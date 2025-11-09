@@ -25,7 +25,6 @@ interface LayerTreeProps {
 
 /**
  * Recursive component to display the DOM tree structure
- * with Webstudio-inspired styling
  */
 export const LayerTree: React.FC<LayerTreeProps> = ({ 
   node, 
@@ -56,14 +55,14 @@ export const LayerTree: React.FC<LayerTreeProps> = ({
   };
 
   return (
-    <li className="ws-layer-item">
+    <li className="layer-item">
       <div 
-        className={`ws-layer-item-content ${isSelected ? 'selected' : ''}`}
+        className={`layer-item-content ${isSelected ? 'selected' : ''}`}
         onClick={handleClick}
       >
         {hasChildren ? (
           <div 
-            className={`ws-layer-item-toggle ${isExpanded ? 'expanded' : ''}`}
+            className={`layer-item-toggle ${isExpanded ? 'expanded' : ''}`}
             onClick={handleToggle}
           >
             <ChevronRightIcon />
@@ -72,23 +71,23 @@ export const LayerTree: React.FC<LayerTreeProps> = ({
           <div style={{ width: '16px' }} />
         )}
         
-        <div className="ws-layer-item-icon">
+        <div className="layer-item-icon">
           {getIcon()}
         </div>
         
-        <div className="ws-layer-item-label">
-          <span className="ws-layer-item-tag">{node.tagName}</span>
+        <div className="layer-item-label">
+          <span className="layer-item-tag">{node.tagName}</span>
           {node.id && (
-            <span className="ws-layer-item-id"> #{node.id}</span>
+            <span className="layer-item-id"> #{node.id}</span>
           )}
           {node.classes && (
-            <span className="ws-layer-item-id"> .{node.classes.split(' ')[0]}</span>
+            <span className="layer-item-id"> .{node.classes.split(' ')[0]}</span>
           )}
         </div>
       </div>
       
       {hasChildren && isExpanded && (
-        <ul className="ws-layer-children">
+        <ul className="layer-children">
           {node.children.map((child, index) => (
             <LayerTree 
               key={`${child.stableSelector}-${index}`}
@@ -118,8 +117,8 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({ node, onSelect, selected
 
   if (!node) {
     return (
-      <div className="ws-layer-panel">
-        <div className="ws-layer-empty">
+      <div className="layer-panel">
+        <div className="layer-empty">
           <p>Loading DOM tree...</p>
         </div>
       </div>
@@ -127,19 +126,19 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({ node, onSelect, selected
   }
 
   return (
-    <div className="ws-layer-panel">
-      <div className="ws-layer-search">
+    <div className="layer-panel">
+      <div className="layer-search">
         <input
           type="text"
-          className="ws-layer-search-input"
+          className="layer-search-input"
           placeholder="Search layers..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
       
-      <div className="ws-panel-content">
-        <ul className="ws-layer-tree">
+      <div className="panel-content">
+        <ul className="layer-tree">
           <LayerTree 
             node={node} 
             onSelect={onSelect}

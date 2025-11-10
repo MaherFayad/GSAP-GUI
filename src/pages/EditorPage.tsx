@@ -9,7 +9,7 @@ import {
   TimelineEditor,
   StateMachineEditor
 } from '../components';
-import { PropertiesPanel } from '../components/PropertiesPanel/PropertiesPanel';
+import { PropertiesPanelComprehensive } from '../components/PropertiesPanel';
 import { usePostMessage } from '../hooks';
 import { supabase } from '../utils/supabaseClient';
 import type { AnimationData } from '../types';
@@ -323,8 +323,9 @@ export const EditorPage = () => {
                 <TimelineEditor
                   animationData={animationData}
                   setAnimationData={setAnimationData}
-                  sendMessage={sendMessage}
-                />
+                  sendMessage={sendMessage} currentTime={0} onTimeChange={function (time: number): void {
+                    throw new Error('Function not implemented.');
+                  } }                />
               )}
               {activeTab === 'workflow' && (
                 <StateMachineEditor
@@ -351,7 +352,7 @@ export const EditorPage = () => {
           <div style={{ padding: '10px', borderBottom: '1px solid #444' }}>
             <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold' }}>Properties</h3>
           </div>
-          <PropertiesPanel
+          <PropertiesPanelComprehensive
             selectedElement={selectedSelector}
             sendMessage={sendMessage}
             animationData={animationData}

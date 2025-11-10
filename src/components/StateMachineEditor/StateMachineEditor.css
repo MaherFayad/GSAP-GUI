@@ -1,4 +1,4 @@
-/* State Machine Editor - Rive-inspired Design */
+/* State Machine Editor - Rive-style Design */
 
 .state-machine-editor {
   display: flex;
@@ -7,119 +7,140 @@
   overflow: hidden;
 }
 
-/* Sidebar */
+/* Sidebar (Rive-style compact) */
 .state-machine-sidebar {
-  width: 200px;
-  background: var(--background-surface);
+  width: 160px;
+  background: var(--background-panel);
   border-right: 1px solid var(--border-main);
   display: flex;
   flex-direction: column;
 }
 
 .state-machine-sidebar-header {
-  padding: var(--space-4);
-  background: var(--background-panel-header);
+  padding: 6px var(--space-2);
+  background: var(--background-panel);
   border-bottom: 1px solid var(--border-main);
+  height: 28px;
+  display: flex;
+  align-items: center;
 }
 
 .state-machine-sidebar-title {
-  font-size: var(--font-size-2);
+  font-size: 10px;
   font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-2);
+  letter-spacing: 0.8px;
 }
 
 .state-machine-sidebar-content {
-  padding: var(--space-4);
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .state-machine-node-btn {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--button-background);
+  gap: 4px;
+  padding: 5px var(--space-2);
+  background: var(--background-surface);
   border: 1px solid var(--border-main);
-  border-radius: var(--radius-2);
+  border-radius: var(--radius-1);
   color: var(--text-primary);
   font-size: var(--font-size-2);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
+  height: 26px;
+  line-height: 1;
+}
+
+.state-machine-node-btn span {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .state-machine-node-btn:hover {
-  background: var(--button-background-hover);
+  background: var(--background-surface-hover);
   border-color: var(--border-hover);
 }
 
 .state-machine-node-btn:active {
-  background: var(--button-background-active);
+  background: var(--background-surface-active);
 }
 
 .state-machine-node-btn.state {
-  border-left: 3px solid var(--accent-green);
+  border-left: 2px solid var(--accent-green);
+  padding-left: 6px;
 }
 
 .state-machine-node-btn.trigger {
-  border-left: 3px solid var(--accent-red);
+  border-left: 2px solid var(--accent-red);
+  padding-left: 6px;
 }
 
 .state-machine-divider {
   height: 1px;
   background: var(--border-main);
-  margin: var(--space-2) 0;
+  margin: 4px 0;
+  opacity: 0.5;
 }
 
 .state-machine-clear-btn {
-  padding: var(--space-2) var(--space-3);
+  padding: 4px var(--space-2);
   background: transparent;
   border: 1px solid var(--border-main);
-  border-radius: var(--radius-2);
-  color: var(--text-secondary);
+  border-radius: var(--radius-1);
+  color: var(--text-tertiary);
   font-size: var(--font-size-2);
   cursor: pointer;
   transition: all var(--transition-fast);
+  height: 24px;
+  line-height: 1;
 }
 
 .state-machine-clear-btn:hover {
   border-color: var(--accent-red);
   color: var(--accent-red);
+  background: var(--background-surface);
 }
 
 .state-machine-legend {
   margin-top: auto;
-  padding: var(--space-4);
+  padding: var(--space-3);
   border-top: 1px solid var(--border-main);
 }
 
 .state-machine-legend-title {
-  font-size: var(--font-size-1);
+  font-size: 10px;
   font-weight: var(--font-weight-semibold);
   color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--space-3);
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
 }
 
 .state-machine-legend-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-  font-size: var(--font-size-1);
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 11px;
   color: var(--text-tertiary);
+  line-height: 1.3;
+}
+
+.state-machine-legend-item:last-child {
+  margin-bottom: 0;
 }
 
 .state-machine-legend-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .state-machine-legend-dot.start {
@@ -141,62 +162,84 @@
   background: var(--background-canvas);
 }
 
-/* Instructions Overlay */
+/* Instructions Overlay (Rive-style compact) */
 .state-machine-instructions {
   position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  background: rgba(0, 0, 0, 0.9);
+  top: var(--space-3);
+  right: var(--space-3);
+  background: rgba(26, 26, 26, 0.95);
   border: 1px solid var(--border-main);
-  border-radius: var(--radius-3);
-  padding: var(--space-5);
-  max-width: 300px;
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  max-width: 260px;
   z-index: var(--z-overlay);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
 }
 
 .state-machine-instructions-title {
-  font-size: var(--font-size-3);
+  font-size: var(--font-size-2);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .state-machine-instructions-list {
   margin: 0;
-  padding-left: var(--space-6);
-  font-size: var(--font-size-2);
+  padding-left: var(--space-5);
+  font-size: var(--font-size-1);
   color: var(--text-secondary);
-  line-height: var(--line-height-relaxed);
+  line-height: 1.5;
 }
 
 .state-machine-instructions-list li {
-  margin-bottom: var(--space-2);
+  margin-bottom: 4px;
 }
 
-/* React Flow Overrides */
+.state-machine-instructions-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* React Flow Overrides (Rive-style) */
 .state-machine-canvas .react-flow__controls {
-  background: var(--background-surface);
+  background: var(--background-panel);
   border: 1px solid var(--border-main);
   border-radius: var(--radius-2);
+  box-shadow: var(--shadow-2);
 }
 
 .state-machine-canvas .react-flow__controls-button {
-  background: var(--button-background);
+  background: transparent;
   border-bottom: 1px solid var(--border-main);
   color: var(--text-primary);
+  width: 28px;
+  height: 28px;
+  transition: all var(--transition-fast);
 }
 
 .state-machine-canvas .react-flow__controls-button:hover {
-  background: var(--button-background-hover);
+  background: var(--background-surface);
 }
 
 .state-machine-canvas .react-flow__controls-button:last-child {
   border-bottom: none;
 }
 
+.state-machine-canvas .react-flow__controls-button svg {
+  width: 14px;
+  height: 14px;
+}
+
 .state-machine-canvas .react-flow__node {
   font-family: var(--font-sans);
   font-size: var(--font-size-2);
+  border-radius: var(--radius-2) !important;
+  font-weight: var(--font-weight-medium);
 }
 
+.state-machine-canvas .react-flow__edge-path {
+  stroke-width: 1.5px;
+}
+
+.state-machine-canvas .react-flow__background {
+  background-color: var(--background-canvas);
+}

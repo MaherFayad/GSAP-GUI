@@ -19,7 +19,7 @@ import {
   ToolbarTitle
 } from '../components';
 import { LayerPanel } from '../components/LayerPanel';
-import { PropertiesPanelNew } from '../components/PropertiesPanel';
+import { PropertiesPanelComprehensive } from '../components/PropertiesPanel';
 import { usePostMessage } from '../hooks';
 import { supabase } from '../utils/supabaseClient';
 import type { AnimationData } from '../types';
@@ -281,7 +281,7 @@ export const EditorPageNew = () => {
       <div className="panel-header">
         <h3 className="panel-title">Properties</h3>
       </div>
-      <PropertiesPanelNew
+      <PropertiesPanelComprehensive
         selectedElement={selectedSelector}
         sendMessage={sendMessage}
         animationData={animationData}

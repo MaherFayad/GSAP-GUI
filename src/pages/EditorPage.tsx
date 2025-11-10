@@ -323,7 +323,7 @@ export const EditorPage = () => {
                 <TimelineEditor
                   animationData={animationData}
                   setAnimationData={setAnimationData}
-                  sendMessage={sendMessage} currentTime={0} onTimeChange={function (time: number): void {
+                  sendMessage={sendMessage} currentTime={0} onTimeChange={function (): void {
                     throw new Error('Function not implemented.');
                   } }                />
               )}

@@ -1,0 +1,204 @@
+/* Figma-Style Property Inputs */
+
+.figma-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  gap: var(--space-2);
+  min-height: 28px;
+}
+
+.figma-input-label {
+  font-size: var(--font-size-2);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  cursor: ns-resize;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.figma-input-label:hover {
+  color: var(--text-primary);
+}
+
+.figma-input-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.figma-input-value-container {
+  flex: 1;
+  max-width: 80px;
+}
+
+.figma-input-value {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 4px 8px;
+  background: var(--background-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  cursor: text;
+  transition: all var(--transition-fast);
+  min-height: 24px;
+}
+
+.figma-input-value:hover {
+  background: var(--background-surface-hover);
+  border-color: var(--border-hover);
+}
+
+.figma-input-number {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2);
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.figma-input-unit {
+  font-size: var(--font-size-1);
+  color: var(--text-tertiary);
+  margin-left: 2px;
+}
+
+.figma-input-field {
+  width: 100%;
+  padding: 4px 8px;
+  background: var(--input-background);
+  border: 1px solid var(--accent-blue);
+  border-radius: var(--radius-1);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2);
+  text-align: right;
+  outline: none;
+}
+
+/* Linked Inputs */
+.figma-linked-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.figma-input-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-1);
+}
+
+.figma-link-btn {
+  background: var(--background-surface);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-1);
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.figma-link-btn:hover {
+  background: var(--background-surface-hover);
+  border-color: var(--border-hover);
+}
+
+.figma-link-btn.linked {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: white;
+}
+
+.figma-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+/* Select */
+.figma-select-field {
+  padding: 4px 8px;
+  background: var(--background-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  color: var(--text-primary);
+  font-size: var(--font-size-2);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none;
+  flex: 1;
+  max-width: 120px;
+}
+
+.figma-select-field:hover {
+  background: var(--background-surface-hover);
+  border-color: var(--border-hover);
+}
+
+.figma-select-field:focus {
+  border-color: var(--accent-blue);
+}
+
+/* Color Input */
+.figma-color-input-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  max-width: 120px;
+}
+
+.figma-color-swatch {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-1);
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+
+.figma-color-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.figma-color-swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-1);
+}
+
+.figma-color-field {
+  flex: 1;
+  padding: 4px 8px;
+  background: var(--background-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-1);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-2);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.figma-color-field:hover {
+  background: var(--background-surface-hover);
+  border-color: var(--border-hover);
+}
+
+.figma-color-field:focus {
+  border-color: var(--accent-blue);
+}
+

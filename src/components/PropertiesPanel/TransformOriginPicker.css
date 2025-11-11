@@ -1,0 +1,74 @@
+/* Transform Origin Visual Picker */
+.transform-origin-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  width: 100%;
+  height: 100%;
+}
+
+.transform-origin-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 32px;
+  width: 100%;
+  height: 100%;
+}
+
+.transform-origin-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 75%;
+  height: 100%;
+  border: 2px solid var(--border-main);
+  border-radius: var(--radius-1);
+  background: var(--background-surface);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.transform-origin-point {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.transform-origin-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  border: 2px solid var(--background-panel);
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.transform-origin-point:hover .transform-origin-dot {
+  background: var(--accent-blue);
+  transform: scale(1.2);
+}
+
+.transform-origin-point.active .transform-origin-dot {
+  background: var(--accent-blue);
+  transform: scale(1.3);
+  box-shadow: 0 0 0 2px var(--accent-blue-hover);
+}
+
+.transform-origin-point:active .transform-origin-dot {
+  transform: scale(1.1);
+}
+

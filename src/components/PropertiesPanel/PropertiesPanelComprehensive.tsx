@@ -11,7 +11,13 @@ import {
   Slider 
 } from './PropertyInputs';
 import { PropertyRow, InlineProperty } from './PropertyGroups';
+import { FigmaNumberInput, FigmaLinkedInputs, FigmaSelect, FigmaColorInput } from './FigmaStyleInputs';
+import { TransformOriginPicker } from './TransformOriginPicker';
+import { EasingCurveEditor } from './EasingCurveEditor';
 import './PropertiesPanel.css';
+import './FigmaStyleInputs.css';
+import './TransformOriginPicker.css';
+import './EasingCurveEditor.css';
 
 interface PropertiesPanelProps {
   selectedElement: string | null;
@@ -146,6 +152,7 @@ export const PropertiesPanelComprehensive = ({
   const [ease, setEase] = useState('power2.out');
   const [repeat, setRepeat] = useState(0);
   const [yoyo, setYoyo] = useState(false);
+  const [showEasingEditor, setShowEasingEditor] = useState(false);
 
   // ===== UI STATE =====
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -513,12 +520,12 @@ export const PropertiesPanelComprehensive = ({
                 </InlineProperty>
               </PropertyRow>
 
-              <Select
-                label="Transform Origin"
-                value={transformOrigin}
-                onChange={setTransformOrigin}
-                options={TRANSFORM_ORIGIN_OPTIONS}
-              />
+              <PropertyRow label="Transform Origin">
+                <TransformOriginPicker
+                  value={transformOrigin}
+                  onChange={setTransformOrigin}
+                />
+              </PropertyRow>
             </div>
           )}
         </div>
@@ -852,12 +859,21 @@ export const PropertiesPanelComprehensive = ({
                 onReset={() => setDelay(0)}
               />
 
-              <Select
-                label="Easing"
-                value={ease}
-                onChange={setEase}
-                options={EASING_OPTIONS}
-              />
+              <div className="property-row-with-button">
+                <Select
+                  label="Easing"
+                  value={ease}
+                  onChange={setEase}
+                  options={EASING_OPTIONS}
+                />
+                <button
+                  className="easing-custom-btn"
+                  onClick={() => setShowEasingEditor(true)}
+                  title="Custom Easing Curve"
+                >
+                  ⚙
+                </button>
+              </div>
 
               <NumberInput
                 label="Repeat"
@@ -880,6 +896,19 @@ export const PropertiesPanelComprehensive = ({
         </div>
       </div>
     </div>
+
+      {/* Easing Curve Editor Modal */}
+      {showEasingEditor && (
+        <EasingCurveEditor
+          value={ease}
+          onChange={(newEase) => {
+            setEase(newEase);
+            setShowEasingEditor(false);
+          }}
+          onClose={() => setShowEasingEditor(false)}
+        />
+      )}
+    </>
   );
 };
 

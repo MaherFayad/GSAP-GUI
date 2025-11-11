@@ -21,7 +21,45 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
   const [selectedTimelineId, setSelectedTimelineId] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100); // pixels per second
   const [isDraggingPlayhead, setIsDraggingPlayhead] = useState(false);
+  const [maxTime, setMaxTime] = useState(10); // Timeline duration in seconds
   const canvasRef = useRef<HTMLDivElement>(null);
+  const rulerRef = useRef<HTMLDivElement>(null);
+  const [elementDisplayNames, setElementDisplayNames] = useState<Map<string, string>>(new Map());
+
+  // Format selector for display based on actual element data
+  const formatSelector = (selector: string): string => {
+    // Check if we have cached display name
+    if (elementDisplayNames.has(selector)) {
+      return elementDisplayNames.get(selector) || selector;
+    }
+    
+    // Request element info from sandbox
+    sendMessage('GET_ELEMENT_STYLES', { selector });
+    
+    // Return temporary display while waiting
+    return selector;
+  };
+
+  // Listen for element metadata from sandbox
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'ELEMENT_STYLES' && event.data.payload.styles) {
+        const { selector, styles } = event.data.payload;
+        const { tagName, className } = styles;
+        
+        if (tagName) {
+          const displayName = className 
+            ? `${tagName} .${className.split(' ')[0]}` // Use first class if multiple
+            : tagName;
+          
+          setElementDisplayNames(prev => new Map(prev).set(selector, displayName));
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const handleNewTimeline = () => {
     const newId = `timeline_${Date.now()}`;
@@ -69,17 +107,64 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
   // Handle playhead dragging
   const handlePlayheadMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDraggingPlayhead(true);
   };
 
+  // Handle clicking on the timeline canvas to jump to time
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    if (isDraggingPlayhead) return;
+    if (!rulerRef.current) return;
+
+    // Get position relative to the ruler (which starts after the sidebar)
+    const rect = rulerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const newTime = Math.max(0, Math.min(maxTime, x / zoom));
+    onTimeChange(Number(newTime.toFixed(2)));
+  };
+
+  // Handle clicking on a keyframe
+  const handleKeyframeClick = (keyframeTime: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onTimeChange(keyframeTime);
+  };
+
+  // Zoom presets
+  const zoomPresets = [
+    { label: '25%', value: 25 },
+    { label: '50%', value: 50 },
+    { label: '100%', value: 100 },
+    { label: '200%', value: 200 },
+    { label: '400%', value: 400 },
+  ];
+
+  const handleZoomPreset = (value: number) => {
+    setZoom(value);
+  };
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(500, prev + 25));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(25, prev - 25));
+  };
+
+  const handleFitTimeline = () => {
+    if (!canvasRef.current) return;
+    const availableWidth = canvasRef.current.clientWidth - 160; // Subtract sidebar width
+    const newZoom = Math.floor(availableWidth / maxTime);
+    setZoom(Math.max(25, Math.min(500, newZoom)));
+  };
+
   useEffect(() => {
-    if (!isDraggingPlayhead || !canvasRef.current) return;
+    if (!isDraggingPlayhead || !rulerRef.current) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!canvasRef.current) return;
-      const rect = canvasRef.current.getBoundingClientRect();
+      if (!rulerRef.current) return;
+      const rect = rulerRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
-      const newTime = Math.max(0, x / zoom);
+      const newTime = Math.max(0, Math.min(maxTime, x / zoom));
       onTimeChange(Number(newTime.toFixed(2)));
     };
 
@@ -94,7 +179,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDraggingPlayhead, zoom, onTimeChange]);
+  }, [isDraggingPlayhead, zoom, onTimeChange, maxTime]);
 
   const timelineIds = Object.keys(animationData.timelines);
   const selectedTimeline = selectedTimelineId
@@ -113,10 +198,10 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
     });
   }
 
-  // Generate time ruler ticks
-  const maxTime = 10; // seconds
-  const ticks = [];
-  for (let i = 0; i <= maxTime; i++) {
+  // Generate time ruler ticks based on zoom level
+  const ticks: number[] = [];
+  const tickInterval = zoom < 50 ? 2 : zoom < 100 ? 1 : 0.5; // Adaptive tick spacing
+  for (let i = 0; i <= maxTime; i += tickInterval) {
     ticks.push(i);
   }
 
@@ -130,8 +215,8 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
             <PlusIcon />
             New Timeline
           </button>
-          <button 
-            className="timeline-btn" 
+          <button
+            className="timeline-btn"
             onClick={handlePlayTimeline}
             disabled={!selectedTimelineId}
           >
@@ -184,7 +269,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
           {selectedTimeline ? (
             <>
               {/* Time Ruler */}
-              <div className="timeline-ruler">
+              <div className="timeline-ruler" onClick={handleCanvasClick} ref={rulerRef}>
                 {ticks.map((tick) => (
                   <div
                     key={tick}
@@ -192,7 +277,9 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
                     style={{ left: `${tick * zoom}px` }}
                   >
                     <div className="timeline-ruler-tick-line" />
-                    <div className="timeline-ruler-tick-label">{tick}s</div>
+                    <div className="timeline-ruler-tick-label">
+                      {tick % 1 === 0 ? `${tick}s` : `${tick.toFixed(1)}`}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -222,9 +309,9 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
                     <div key={selector} className="timeline-track">
                       <div className="timeline-track-label">
                         <div className="timeline-track-name">Element</div>
-                        <div className="timeline-track-selector">{selector}</div>
+                        <div className="timeline-track-selector">{formatSelector(selector)}</div>
                       </div>
-                      <div className="timeline-track-content">
+                      <div className="timeline-track-content" onClick={handleCanvasClick}>
                         {/* Grid lines */}
                         <div className="timeline-grid">
                           {ticks.map((tick) => (
@@ -235,14 +322,15 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
                             />
                           ))}
                         </div>
-                        
+
                         {/* Keyframes */}
                         {keyframes.map((keyframe, idx) => (
                           <div
-                            key={idx}
+                            key={`${keyframe.id}-${idx}`}
                             className="timeline-keyframe"
                             style={{ left: `${(keyframe.time || 0) * zoom}px` }}
-                            title={`Time: ${keyframe.time}s`}
+                            title={`Time: ${keyframe.time}s - Click to jump`}
+                            onClick={(e) => handleKeyframeClick(keyframe.time || 0, e)}
                           />
                         ))}
                       </div>
@@ -264,18 +352,49 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({
 
       {/* Timeline Controls */}
       <div className="timeline-controls">
-        <div className="timeline-time-display">{currentTime.toFixed(2)}s</div>
-        <div className="timeline-zoom-control">
-          <span className="timeline-zoom-label">Zoom:</span>
+        <div className="timeline-time-display">{currentTime.toFixed(2)}s / {maxTime}s</div>
+
+        {/* Duration Control */}
+        <div className="timeline-duration-control">
+          <span className="timeline-control-label">Duration:</span>
           <input
-            type="range"
-            min="50"
-            max="200"
-            value={zoom}
-            onChange={(e) => setZoom(Number(e.target.value))}
-            style={{ width: '100px' }}
+            type="number"
+            min="1"
+            max="60"
+            value={maxTime}
+            aria-label="Timeline Duration in seconds"
+
+            onChange={(e) => setMaxTime(Math.max(1, Number(e.target.value)))}
+            className="timeline-duration-input"
           />
-          <span className="timeline-zoom-label">{zoom}px/s</span>
+          <span className="timeline-control-label">s</span>
+        </div>
+
+        {/* Zoom Controls */}
+        <div className="timeline-zoom-control">
+          <button className="timeline-zoom-btn" onClick={handleZoomOut} title="Zoom Out">
+            -
+          </button>
+          <span className="timeline-zoom-label">{zoom}%</span>
+          <button className="timeline-zoom-btn" onClick={handleZoomIn} title="Zoom In">
+            +
+          </button>
+          <button className="timeline-zoom-btn" onClick={handleFitTimeline} title="Fit Timeline">
+            Fit
+          </button>
+        </div>
+
+        {/* Zoom Presets */}
+        <div className="timeline-zoom-presets">
+          {zoomPresets.map((preset) => (
+            <button
+              key={preset.value}
+              className={`timeline-zoom-preset ${zoom === preset.value ? 'active' : ''}`}
+              onClick={() => handleZoomPreset(preset.value)}
+            >
+              {preset.label}
+            </button>
+          ))}
         </div>
       </div>
     </div>

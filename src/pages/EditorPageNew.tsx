@@ -271,6 +271,7 @@ export const EditorPageNew = () => {
           setIsInspectorActive(false);
         }}
         selectedSelector={selectedSelector}
+        sendMessage={sendMessage}
       />
     </>
   );

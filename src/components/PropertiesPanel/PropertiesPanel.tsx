@@ -1,5 +1,5 @@
-import { useControls, button, folder } from 'leva';
-import { useEffect } from 'react';
+import { useControls, folder } from 'leva';
+import { useEffect, useRef } from 'react';
 import type { AnimationData, TweenProperties } from '../../types';
 
 interface PropertiesPanelProps {
@@ -7,7 +7,8 @@ interface PropertiesPanelProps {
   sendMessage: (type: string, payload?: any) => void;
   animationData: AnimationData;
   setAnimationData: React.Dispatch<React.SetStateAction<AnimationData>>;
-  currentTime?: number; // Current playhead time from timeline (we'll pass this later)
+  currentTime?: number; // Current playhead time from timeline
+  activeTimelineId?: string | null; // Active timeline to add keyframes to
 }
 
 export const PropertiesPanel = ({ 
@@ -15,8 +16,11 @@ export const PropertiesPanel = ({
   sendMessage,
   animationData,
   setAnimationData,
-  currentTime = 0
+  currentTime = 0,
+  activeTimelineId
 }: PropertiesPanelProps) => {
+  const previousValuesRef = useRef<any>(null);
+
   // Show a message when no element is selected
   if (!selectedElement) {
     return (
@@ -31,7 +35,7 @@ export const PropertiesPanel = ({
     );
   }
 
-  // Initialize Leva controls with folders
+  // Initialize Leva controls with folders (NO ADD KEYFRAME BUTTON)
   const [values] = useControls(() => ({
     Transform: folder({
       x: {
@@ -79,29 +83,33 @@ export const PropertiesPanel = ({
         value: '#000000',
         label: 'Text Color'
       }
-    }),
-    'Add Keyframe': button(() => handleAddKeyframe())
+    })
   }), [selectedElement]);
 
-  // Real-time "tweak" handler - sends updates whenever values change
+  // Auto-create keyframes when values change
   useEffect(() => {
     if (!selectedElement) return;
+    if (!activeTimelineId) return; // Only auto-create if timeline is active
 
-    // Send the tweak animation properties to the sandbox
+    // Skip on initial render
+    if (previousValuesRef.current === null) {
+      previousValuesRef.current = values;
+      return;
+    }
+
+    // Check if values actually changed
+    const hasChanged = JSON.stringify(previousValuesRef.current) !== JSON.stringify(values);
+    if (!hasChanged) return;
+
+    previousValuesRef.current = values;
+
+    // Send real-time tweak to sandbox
     sendMessage('TWEAK_ANIMATION', {
       selector: selectedElement,
       properties: values
     });
-  }, [values, selectedElement, sendMessage]);
 
-  // Handle adding a keyframe
-  const handleAddKeyframe = () => {
-    if (!selectedElement) return;
-
-    // Get active timeline ID (or create default one)
-    const activeTimelineId = animationData.activeTimelineId || 'default';
-    
-    // Create the tween properties from current control values
+    // Auto-create keyframe at current time
     const properties: TweenProperties = {
       x: values.x,
       y: values.y,
@@ -112,37 +120,59 @@ export const PropertiesPanel = ({
       color: values.color
     };
 
-    // Create new keyframe
     const newKeyframe = {
       id: `keyframe-${Date.now()}`,
       time: currentTime,
       selector: selectedElement,
       properties,
-      duration: 1, // Default 1 second duration
-      ease: 'power2.out' // Default ease
+      duration: 1,
+      ease: 'power2.out'
     };
 
     setAnimationData(prevData => {
-      // Get or create the active timeline
       const existingTimeline = prevData.timelines[activeTimelineId];
       
       if (existingTimeline) {
-        // Add keyframe to existing timeline
-        return {
-          ...prevData,
-          timelines: {
-            ...prevData.timelines,
-            [activeTimelineId]: {
-              ...existingTimeline,
-              keyframes: [...existingTimeline.keyframes, newKeyframe]
+        // Check if keyframe already exists at this exact time for this element
+        const existingKeyframeIndex = existingTimeline.keyframes.findIndex(
+          kf => kf.time === currentTime && kf.selector === selectedElement
+        );
+
+        if (existingKeyframeIndex >= 0) {
+          // Update existing keyframe
+          const updatedKeyframes = [...existingTimeline.keyframes];
+          updatedKeyframes[existingKeyframeIndex] = {
+            ...updatedKeyframes[existingKeyframeIndex],
+            properties
+          };
+
+          return {
+            ...prevData,
+            timelines: {
+              ...prevData.timelines,
+              [activeTimelineId]: {
+                ...existingTimeline,
+                keyframes: updatedKeyframes
+              }
             }
-          }
-        };
+          };
+        } else {
+          // Add new keyframe
+          return {
+            ...prevData,
+            timelines: {
+              ...prevData.timelines,
+              [activeTimelineId]: {
+                ...existingTimeline,
+                keyframes: [...existingTimeline.keyframes, newKeyframe]
+              }
+            }
+          };
+        }
       } else {
         // Create new timeline with this keyframe
         return {
           ...prevData,
-          activeTimelineId,
           timelines: {
             ...prevData.timelines,
             [activeTimelineId]: {
@@ -154,9 +184,7 @@ export const PropertiesPanel = ({
         };
       }
     });
-
-    console.log('[PropertiesPanel] Added keyframe:', newKeyframe);
-  };
+  }, [values, selectedElement, sendMessage, currentTime, activeTimelineId, setAnimationData]);
 
   // Leva will automatically render the controls panel
   return null;

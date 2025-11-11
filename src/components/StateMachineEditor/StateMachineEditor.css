@@ -1,10 +1,11 @@
-/* State Machine Editor - Rive-style Design */
+/* State Machine Editor - Rive-style Canvas Implementation */
 
 .state-machine-editor {
   display: flex;
   height: 100%;
   background: var(--background-panel);
   overflow: hidden;
+  font-family: var(--font-sans);
 }
 
 /* Sidebar (Rive-style compact) */
@@ -14,6 +15,7 @@
   border-right: 1px solid var(--border-main);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .state-machine-sidebar-header {
@@ -38,6 +40,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.state-machine-section-title {
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 .state-machine-node-btn {
@@ -51,20 +65,34 @@
   color: var(--text-primary);
   font-size: var(--font-size-2);
   font-weight: var(--font-weight-medium);
-  cursor: pointer;
+  cursor: grab;
   transition: all var(--transition-fast);
   height: 26px;
   line-height: 1;
+  user-select: none;
+}
+
+.state-machine-node-btn.draggable {
+  cursor: grab;
+}
+
+.state-machine-node-btn.draggable:active {
+  cursor: grabbing;
 }
 
 .state-machine-node-btn span {
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1;
+  opacity: 0.5;
 }
 
 .state-machine-node-btn:hover {
   background: var(--background-surface-hover);
   border-color: var(--border-hover);
+}
+
+.state-machine-node-btn:hover span {
+  opacity: 1;
 }
 
 .state-machine-node-btn:active {
@@ -155,11 +183,90 @@
   background: var(--accent-red);
 }
 
-/* Canvas */
+/* Timeline List */
+.state-machine-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.state-machine-timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px var(--space-2);
+  background: var(--background-surface);
+  border: 1px solid var(--border-main);
+  border-left: 2px solid var(--accent-purple);
+  border-radius: var(--radius-1);
+  color: var(--text-primary);
+  font-size: var(--font-size-2);
+  font-weight: var(--font-weight-medium);
+  cursor: grab;
+  transition: all var(--transition-fast);
+  height: 26px;
+  line-height: 1;
+  user-select: none;
+}
+
+.state-machine-timeline-item:hover {
+  background: var(--background-surface-hover);
+  border-color: var(--border-hover);
+  border-left-color: var(--accent-purple);
+}
+
+.state-machine-timeline-item:active {
+  cursor: grabbing;
+  background: var(--background-surface-active);
+}
+
+.state-machine-timeline-item span {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.state-machine-timeline-item:hover span {
+  opacity: 1;
+}
+
+.state-machine-empty-message {
+  padding: var(--space-3);
+  font-size: var(--font-size-1);
+  color: var(--text-tertiary);
+  text-align: center;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Canvas Container */
 .state-machine-canvas {
   flex: 1;
   position: relative;
   background: var(--background-canvas);
+  overflow: hidden;
+  transition: background-color var(--transition-fast);
+}
+
+.state-machine-canvas.dragging {
+  background: rgba(59, 158, 255, 0.05);
+}
+
+.state-machine-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  pointer-events: all;
+}
+
+.state-machine-canvas canvas:active {
+  cursor: grabbing;
+}
+
+.state-machine-canvas.dragging canvas {
+  cursor: copy;
 }
 
 /* Instructions Overlay (Rive-style compact) */
@@ -174,6 +281,8 @@
   max-width: 260px;
   z-index: var(--z-overlay);
   backdrop-filter: blur(12px);
+  pointer-events: none;
+  user-select: none;
 }
 
 .state-machine-instructions-title {
@@ -199,47 +308,35 @@
   margin-bottom: 0;
 }
 
-/* React Flow Overrides (Rive-style) */
-.state-machine-canvas .react-flow__controls {
-  background: var(--background-panel);
-  border: 1px solid var(--border-main);
-  border-radius: var(--radius-2);
-  box-shadow: var(--shadow-2);
+/* Trigger Editor Panel */
+.state-machine-trigger-editor {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-modal);
+  animation: fadeIn 0.2s ease-out;
 }
 
-.state-machine-canvas .react-flow__controls-button {
-  background: transparent;
-  border-bottom: 1px solid var(--border-main);
-  color: var(--text-primary);
-  width: 28px;
-  height: 28px;
-  transition: all var(--transition-fast);
+.state-machine-trigger-editor::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+  backdrop-filter: blur(4px);
 }
 
-.state-machine-canvas .react-flow__controls-button:hover {
-  background: var(--background-surface);
-}
-
-.state-machine-canvas .react-flow__controls-button:last-child {
-  border-bottom: none;
-}
-
-.state-machine-canvas .react-flow__controls-button svg {
-  width: 14px;
-  height: 14px;
-}
-
-.state-machine-canvas .react-flow__node {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-2);
-  border-radius: var(--radius-2) !important;
-  font-weight: var(--font-weight-medium);
-}
-
-.state-machine-canvas .react-flow__edge-path {
-  stroke-width: 1.5px;
-}
-
-.state-machine-canvas .react-flow__background {
-  background-color: var(--background-canvas);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }

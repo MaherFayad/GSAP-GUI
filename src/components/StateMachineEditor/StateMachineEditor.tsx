@@ -44,7 +44,9 @@ interface ConnectionDraft {
   currentY: number;
 }
 
-export const StateMachineEditor: React.FC<StateMachineEditorProps> = () => {
+export const StateMachineEditor: React.FC<StateMachineEditorProps> = ({
+  animationData
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -70,6 +72,8 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = () => {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [editingTrigger, setEditingTrigger] = useState<string | null>(null); // Node ID being edited
+  const [draggedNodeType, setDraggedNodeType] = useState<'state' | 'trigger' | null>(null);
+  const [draggedTimelineId, setDraggedTimelineId] = useState<string | null>(null);
 
   // Draw the canvas
   const draw = useCallback(() => {
@@ -427,33 +431,54 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = () => {
     [selectedNode]
   );
 
-  // Add nodes
-  const addStateNode = () => {
-    const newNode: Node = {
-      id: `state_${Date.now()}`,
-      type: 'state',
-      label: 'Play Animation',
-      x: 250 + Math.random() * 100,
-      y: 200 + Math.random() * 100,
-      width: 120,
-      height: 50,
-    };
+  // Removed legacy click handlers - now using drag and drop only
+
+  // Add node at specific position (for drag and drop)
+  const addNodeAtPosition = (type: 'state' | 'trigger', canvasX: number, canvasY: number) => {
+    const adjustedX = (canvasX - pan.x) / zoom;
+    const adjustedY = (canvasY - pan.y) / zoom;
+
+    const newNode: Node = type === 'state' 
+      ? {
+          id: `state_${Date.now()}`,
+          type: 'state',
+          label: 'Play Animation',
+          x: adjustedX - 60, // Center the node
+          y: adjustedY - 25,
+          width: 120,
+          height: 50,
+        }
+      : {
+          id: `trigger_${Date.now()}`,
+          type: 'trigger',
+          label: 'On Click',
+          x: adjustedX - 50,
+          y: adjustedY - 25,
+          width: 100,
+          height: 50,
+          triggerConfig: {
+            type: 'click',
+          },
+        };
+
     setNodes((prev) => [...prev, newNode]);
   };
 
-  const addTriggerNode = () => {
+  // Add timeline reference node
+  const addTimelineNodeAtPosition = (timelineName: string, canvasX: number, canvasY: number) => {
+    const adjustedX = (canvasX - pan.x) / zoom;
+    const adjustedY = (canvasY - pan.y) / zoom;
+
     const newNode: Node = {
-      id: `trigger_${Date.now()}`,
-      type: 'trigger',
-      label: 'On Click',
-      x: 250 + Math.random() * 100,
-      y: 200 + Math.random() * 100,
-      width: 100,
+      id: `timeline_${Date.now()}`,
+      type: 'state',
+      label: timelineName,
+      x: adjustedX - 75,
+      y: adjustedY - 25,
+      width: 150,
       height: 50,
-      triggerConfig: {
-        type: 'click',
-      },
     };
+
     setNodes((prev) => [...prev, newNode]);
   };
 
@@ -536,6 +561,51 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
+  // Handle drag start from sidebar
+  const handleDragStart = (type: 'state' | 'trigger') => (e: React.DragEvent) => {
+    setDraggedNodeType(type);
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', type);
+  };
+
+  // Handle timeline drag start
+  const handleTimelineDragStart = (timelineId: string, timelineName: string) => (e: React.DragEvent) => {
+    setDraggedTimelineId(timelineId);
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('text/plain', `timeline:${timelineId}:${timelineName}`);
+  };
+
+  // Handle drag over canvas
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  // Handle drop on canvas
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const canvasX = e.clientX - rect.left;
+    const canvasY = e.clientY - rect.top;
+
+    const data = e.dataTransfer.getData('text/plain');
+    
+    if (data.startsWith('timeline:')) {
+      // Handle timeline drop
+      const parts = data.split(':');
+      const timelineName = parts.slice(2).join(':') || 'Timeline';
+      addTimelineNodeAtPosition(timelineName, canvasX, canvasY);
+      setDraggedTimelineId(null);
+    } else if (draggedNodeType) {
+      // Handle node drop
+      addNodeAtPosition(draggedNodeType, canvasX, canvasY);
+      setDraggedNodeType(null);
+    }
+  };
+
   return (
     <div className="state-machine-editor">
       {/* Sidebar */}
@@ -545,13 +615,53 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = () => {
         </div>
 
         <div className="state-machine-sidebar-content">
-          <button className="state-machine-node-btn state" onClick={addStateNode}>
-            <span>+</span> State Node
-          </button>
+          <div className="state-machine-section-title">Nodes</div>
+          
+          <div
+            className="state-machine-node-btn state draggable"
+            draggable
+            onDragStart={handleDragStart('state')}
+            title="Drag to canvas or click to add randomly"
+          >
+            <span>⋮⋮</span> State Node
+          </div>
 
-          <button className="state-machine-node-btn trigger" onClick={addTriggerNode}>
-            <span>+</span> Trigger Node
-          </button>
+          <div
+            className="state-machine-node-btn trigger draggable"
+            draggable
+            onDragStart={handleDragStart('trigger')}
+            title="Drag to canvas or click to add randomly"
+          >
+            <span>⋮⋮</span> Trigger Node
+          </div>
+
+          <div className="state-machine-divider" />
+
+          <div className="state-machine-section-title">Timelines</div>
+          
+          <div className="state-machine-timeline-list">
+            {Object.keys(animationData.timelines || {}).length === 0 ? (
+              <div className="state-machine-empty-message">
+                No timelines yet. Create one in the Timelines tab.
+              </div>
+            ) : (
+              Object.entries(animationData.timelines || {}).map(([id, timeline]) => {
+                if (!timeline || typeof timeline !== 'object') return null;
+                const timelineName = (timeline as any).name || 'Timeline';
+                return (
+                  <div
+                    key={id}
+                    className="state-machine-timeline-item draggable"
+                    draggable
+                    onDragStart={handleTimelineDragStart(id, timelineName)}
+                    title="Drag to canvas to add timeline node"
+                  >
+                    <span>⋮⋮</span> {timelineName}
+                  </div>
+                );
+              })
+            )}
+          </div>
 
           <div className="state-machine-divider" />
 
@@ -578,7 +688,12 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = () => {
       </div>
 
       {/* Canvas */}
-      <div className="state-machine-canvas" ref={containerRef}>
+      <div 
+        className={`state-machine-canvas ${draggedNodeType || draggedTimelineId ? 'dragging' : ''}`}
+        ref={containerRef}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
@@ -597,7 +712,7 @@ export const StateMachineEditor: React.FC<StateMachineEditorProps> = () => {
         <div className="state-machine-instructions">
           <div className="state-machine-instructions-title">How to use</div>
           <ul className="state-machine-instructions-list">
-            <li>Click sidebar buttons to add nodes</li>
+            <li>Drag items from sidebar to canvas</li>
             <li>Drag nodes to reposition them</li>
             <li>Shift+Click and drag to create connections</li>
             <li>Double-click trigger nodes to edit</li>

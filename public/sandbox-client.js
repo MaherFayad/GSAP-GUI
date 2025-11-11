@@ -79,6 +79,14 @@
         handleGetDomTree(message);
         break;
 
+      case 'GET_ELEMENT_STYLES':
+        handleGetElementStyles(message);
+        break;
+
+      case 'GET_SCRIPT_CONTENT':
+        handleGetScriptContent(message);
+        break;
+
       default:
         console.warn('[Sandbox Client] Unknown message type:', message.type);
     }
@@ -808,6 +816,151 @@
           message: `Failed to serialize DOM tree: ${error.message}`
         }
       }, '*');
+    }
+  }
+
+  /**
+   * Get current styles from an element
+   */
+  function handleGetElementStyles(message) {
+    const { selector } = message.payload;
+    
+    try {
+      const element = document.querySelector(selector);
+      
+      if (!element) {
+        console.warn('[Sandbox Client] Element not found:', selector);
+        return;
+      }
+
+      // Get computed styles
+      const computedStyle = window.getComputedStyle(element);
+      
+      // Parse transform matrix if it exists
+      const transform = computedStyle.transform;
+      let x = 0, y = 0, scaleX = 1, scaleY = 1, rotation = 0;
+      
+      if (transform && transform !== 'none') {
+        const matrix = transform.match(/matrix\(([^)]+)\)/);
+        if (matrix) {
+          const values = matrix[1].split(',').map(parseFloat);
+          if (values.length === 6) {
+            // matrix(a, b, c, d, tx, ty)
+            // tx, ty = translation
+            x = values[4];
+            y = values[5];
+            
+            // Calculate scale and rotation
+            scaleX = Math.sqrt(values[0] * values[0] + values[1] * values[1]);
+            scaleY = Math.sqrt(values[2] * values[2] + values[3] * values[3]);
+            rotation = Math.atan2(values[1], values[0]) * (180 / Math.PI);
+          }
+        }
+      }
+
+      // Get element metadata
+      const tagName = element.tagName;
+      const className = element.className || '';
+      
+      // Gather all relevant properties
+      const styles = {
+        // Element metadata
+        tagName: tagName,
+        className: className,
+        
+        // Transform properties
+        x: x,
+        y: y,
+        scaleX: scaleX,
+        scaleY: scaleY,
+        rotation: rotation,
+        rotationX: 0, // Can't extract from 2D matrix
+        rotationY: 0,
+        skewX: 0,
+        skewY: 0,
+        
+        // Layout
+        width: parseFloat(computedStyle.width) || 0,
+        height: parseFloat(computedStyle.height) || 0,
+        
+        // Style
+        opacity: parseFloat(computedStyle.opacity) || 1,
+        backgroundColor: computedStyle.backgroundColor || 'transparent',
+        color: computedStyle.color || '#000000',
+        borderRadius: parseFloat(computedStyle.borderRadius) || 0,
+        borderWidth: parseFloat(computedStyle.borderWidth) || 0,
+        borderColor: computedStyle.borderColor || '#000000',
+        
+        // Text
+        fontSize: parseFloat(computedStyle.fontSize) || 16,
+        fontWeight: computedStyle.fontWeight || '400',
+        lineHeight: parseFloat(computedStyle.lineHeight) / parseFloat(computedStyle.fontSize) || 1.5,
+        letterSpacing: parseFloat(computedStyle.letterSpacing) || 0,
+        textAlign: computedStyle.textAlign || 'left',
+        
+        // Other
+        transformOrigin: computedStyle.transformOrigin || 'center center',
+        zIndex: parseInt(computedStyle.zIndex) || 0
+      };
+
+      // Send styles back to the editor
+      window.parent.postMessage({
+        type: 'ELEMENT_STYLES',
+        payload: {
+          selector: selector,
+          styles: styles
+        }
+      }, '*');
+      
+      console.log('[Sandbox Client] Element styles sent:', selector, styles);
+    } catch (error) {
+      console.error('[Sandbox Client] Error getting element styles:', error);
+    }
+  }
+
+  /**
+   * Get script content
+   */
+  function handleGetScriptContent(message) {
+    const { selector } = message.payload;
+    
+    try {
+      const element = document.querySelector(selector);
+      
+      if (!element) {
+        console.warn('[Sandbox Client] Script element not found:', selector);
+        return;
+      }
+
+      // Get script content
+      let content = '';
+      
+      if (element.tagName.toLowerCase() === 'script') {
+        // For inline scripts
+        if (element.textContent) {
+          content = element.textContent;
+        } else if (element.src) {
+          // For external scripts, show the src
+          content = `// External script\n// Source: ${element.src}\n\n// Content not available for external scripts`;
+        } else {
+          content = '// Empty script';
+        }
+      } else {
+        content = '// Not a script element';
+      }
+
+      // Send script content back to the editor
+      window.parent.postMessage({
+        type: 'SCRIPT_CONTENT',
+        payload: {
+          selector: selector,
+          content: content
+        }
+      }, '*');
+      
+      console.log('[Sandbox Client] Script content sent:', selector);
+    } catch (error) {
+      console.error('[Sandbox Client] Error getting script content:', error);
     }
   }
 

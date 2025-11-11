@@ -21,6 +21,7 @@ interface LayerTreeProps {
   onSelect: (selector: string) => void;
   selectedSelector?: string | null;
   depth?: number;
+  onViewScript?: (selector: string) => void;
 }
 
 /**
@@ -30,15 +31,23 @@ export const LayerTree: React.FC<LayerTreeProps> = ({
   node, 
   onSelect, 
   selectedSelector = null,
-  depth = 0 
+  depth = 0,
+  onViewScript
 }) => {
   const [isExpanded, setIsExpanded] = useState(depth < 2); // Auto-expand first 2 levels
   const hasChildren = node.children && node.children.length > 0;
   const isSelected = selectedSelector === node.stableSelector;
+  const isScript = node.tagName.toLowerCase() === 'script';
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onSelect(node.stableSelector);
+    
+    // If it's a script tag and we have the onViewScript handler, show script content
+    if (isScript && onViewScript) {
+      onViewScript(node.stableSelector);
+    } else {
+      onSelect(node.stableSelector);
+    }
   };
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -57,8 +66,9 @@ export const LayerTree: React.FC<LayerTreeProps> = ({
   return (
     <li className="layer-item">
       <div 
-        className={`layer-item-content ${isSelected ? 'selected' : ''}`}
+        className={`layer-item-content ${isSelected ? 'selected' : ''} ${isScript ? 'script-item' : ''}`}
         onClick={handleClick}
+        title={isScript ? 'Click to view script content' : ''}
       >
         {hasChildren ? (
           <div 
@@ -95,6 +105,7 @@ export const LayerTree: React.FC<LayerTreeProps> = ({
               onSelect={onSelect}
               selectedSelector={selectedSelector}
               depth={depth + 1}
+              onViewScript={onViewScript}
             />
           ))}
         </ul>
@@ -110,10 +121,32 @@ interface LayerPanelProps {
   node: SerializedNode | null;
   onSelect: (selector: string) => void;
   selectedSelector?: string | null;
+  sendMessage?: (type: string, payload?: any) => void;
 }
 
-export const LayerPanel: React.FC<LayerPanelProps> = ({ node, onSelect, selectedSelector }) => {
+export const LayerPanel: React.FC<LayerPanelProps> = ({ node, onSelect, selectedSelector, sendMessage }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [scriptContent, setScriptContent] = useState<{ selector: string; content: string } | null>(null);
+
+  // Handle viewing script content
+  const handleViewScript = (selector: string) => {
+    if (sendMessage) {
+      sendMessage('GET_SCRIPT_CONTENT', { selector });
+    }
+  };
+
+  // Listen for script content from sandbox
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'SCRIPT_CONTENT') {
+        const { selector, content } = event.data.payload;
+        setScriptContent({ selector, content });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   if (!node) {
     return (
@@ -144,9 +177,34 @@ export const LayerPanel: React.FC<LayerPanelProps> = ({ node, onSelect, selected
             onSelect={onSelect}
             selectedSelector={selectedSelector}
             depth={0}
+            onViewScript={handleViewScript}
           />
         </ul>
       </div>
+
+      {/* Script Viewer Modal */}
+      {scriptContent && (
+        <div className="script-viewer-overlay" onClick={() => setScriptContent(null)}>
+          <div className="script-viewer-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="script-viewer-header">
+              <div className="script-viewer-title">
+                Script Content
+              </div>
+              <button 
+                className="script-viewer-close"
+                onClick={() => setScriptContent(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="script-viewer-content">
+              <pre className="script-viewer-code">
+                <code>{scriptContent.content || '// Empty script'}</code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import type { AnimationData, TweenProperties } from '../../types';
 import { 
@@ -98,6 +98,9 @@ export const PropertiesPanelComprehensive = ({
   const [x, setX] = useState(0);
   const [y, setY] = useState(0);
   const [scaleX, setScaleX] = useState(1);
+  
+  // Track previous property values to detect actual changes
+  const previousPropertiesRef = useRef<string | null>(null);
   const [scaleY, setScaleY] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [rotationX, setRotationX] = useState(0);
@@ -156,6 +159,61 @@ export const PropertiesPanelComprehensive = ({
   });
 
   const [autoRecord, setAutoRecord] = useState(true);
+  const isInitializingRef = useRef(false);
+
+  // Fetch current styles from selected element
+  useEffect(() => {
+    if (!selectedElement) return;
+
+    isInitializingRef.current = true;
+    previousPropertiesRef.current = null; // Reset to allow first update
+
+    // Request current styles from the element
+    sendMessage('GET_ELEMENT_STYLES', { selector: selectedElement });
+  }, [selectedElement, sendMessage]);
+
+  // Listen for style updates from sandbox
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'ELEMENT_STYLES' && event.data.payload.selector === selectedElement) {
+        const styles = event.data.payload.styles;
+        
+        // Update all state values with current element styles
+        if (styles.x !== undefined) setX(parseFloat(styles.x) || 0);
+        if (styles.y !== undefined) setY(parseFloat(styles.y) || 0);
+        if (styles.scaleX !== undefined) setScaleX(parseFloat(styles.scaleX) || 1);
+        if (styles.scaleY !== undefined) setScaleY(parseFloat(styles.scaleY) || 1);
+        if (styles.rotation !== undefined) setRotation(parseFloat(styles.rotation) || 0);
+        if (styles.rotationX !== undefined) setRotationX(parseFloat(styles.rotationX) || 0);
+        if (styles.rotationY !== undefined) setRotationY(parseFloat(styles.rotationY) || 0);
+        if (styles.skewX !== undefined) setSkewX(parseFloat(styles.skewX) || 0);
+        if (styles.skewY !== undefined) setSkewY(parseFloat(styles.skewY) || 0);
+        if (styles.width !== undefined) setWidth(parseFloat(styles.width) || 100);
+        if (styles.height !== undefined) setHeight(parseFloat(styles.height) || 100);
+        if (styles.opacity !== undefined) setOpacity(parseFloat(styles.opacity) || 1);
+        if (styles.backgroundColor) setBackgroundColor(styles.backgroundColor);
+        if (styles.color) setColor(styles.color);
+        if (styles.borderRadius !== undefined) setBorderRadius(parseFloat(styles.borderRadius) || 0);
+        if (styles.borderWidth !== undefined) setBorderWidth(parseFloat(styles.borderWidth) || 0);
+        if (styles.borderColor) setBorderColor(styles.borderColor);
+        if (styles.fontSize !== undefined) setFontSize(parseFloat(styles.fontSize) || 16);
+        if (styles.fontWeight) setFontWeight(styles.fontWeight);
+        if (styles.lineHeight !== undefined) setLineHeight(parseFloat(styles.lineHeight) || 1.5);
+        if (styles.letterSpacing !== undefined) setLetterSpacing(parseFloat(styles.letterSpacing) || 0);
+        if (styles.textAlign) setTextAlign(styles.textAlign);
+        if (styles.transformOrigin) setTransformOrigin(styles.transformOrigin);
+        if (styles.zIndex !== undefined) setZIndex(parseInt(styles.zIndex) || 0);
+        
+        // Mark initialization complete
+        setTimeout(() => {
+          isInitializingRef.current = false;
+        }, 100);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [selectedElement]);
 
   // Toggle section expansion
   const toggleSection = (sectionId: string) => {
@@ -187,8 +245,10 @@ export const PropertiesPanelComprehensive = ({
   // Real-time "tweak" handler - sends updates to sandbox
   useEffect(() => {
     if (!selectedElement) return;
+    if (isInitializingRef.current) return; // Don't apply during initialization
 
     const properties = getCurrentProperties();
+    const propertiesString = JSON.stringify(properties);
 
     // Send immediate visual update to sandbox
     sendMessage('TWEAK_ANIMATION', {
@@ -196,8 +256,8 @@ export const PropertiesPanelComprehensive = ({
       properties
     });
 
-    // Auto-record keyframe if enabled
-    if (autoRecord) {
+    // Auto-record keyframe if enabled AND properties actually changed
+    if (autoRecord && previousPropertiesRef.current !== null && previousPropertiesRef.current !== propertiesString) {
       const activeTimelineId = animationData.activeTimelineId || 'default';
       
       const newKeyframe = {
@@ -250,64 +310,20 @@ export const PropertiesPanelComprehensive = ({
         }
       });
     }
+
+    // Update the reference for next comparison
+    previousPropertiesRef.current = propertiesString;
   }, [
     x, y, scaleX, scaleY, rotation, rotationX, rotationY, skewX, skewY,
     width, height, opacity, autoAlpha, backgroundColor, color,
     borderRadius, borderWidth, borderColor, fontSize, fontWeight,
     lineHeight, letterSpacing, textAlign, blur, brightness, contrast,
     saturate, padding, margin, transformOrigin, zIndex,
-    selectedElement, sendMessage, currentTime, animationData.activeTimelineId,
+    selectedElement, sendMessage, animationData.activeTimelineId,
     setAnimationData, autoRecord, duration, ease
   ]);
 
-  // Manual keyframe addition
-  const handleAddKeyframe = () => {
-    if (!selectedElement) return;
-
-    const activeTimelineId = animationData.activeTimelineId || 'default';
-    const properties = getCurrentProperties();
-
-    const newKeyframe = {
-      id: `keyframe-${Date.now()}`,
-      time: currentTime,
-      selector: selectedElement,
-      properties,
-      duration,
-      ease
-    };
-
-    setAnimationData(prevData => {
-      const existingTimeline = prevData.timelines[activeTimelineId];
-      
-      if (existingTimeline) {
-        return {
-          ...prevData,
-          timelines: {
-            ...prevData.timelines,
-            [activeTimelineId]: {
-              ...existingTimeline,
-              keyframes: [...existingTimeline.keyframes, newKeyframe]
-            }
-          }
-        };
-      } else {
-        return {
-          ...prevData,
-          activeTimelineId,
-          timelines: {
-            ...prevData.timelines,
-            [activeTimelineId]: {
-              id: activeTimelineId,
-              name: 'Main Timeline',
-              keyframes: [newKeyframe]
-            }
-          }
-        };
-      }
-    });
-
-    console.log('[PropertiesPanel] Added keyframe:', newKeyframe);
-  };
+  // Manual keyframe addition removed - auto-record handles this
 
   // Reset all properties to defaults
   const handleResetAll = () => {
@@ -859,15 +875,6 @@ export const PropertiesPanelComprehensive = ({
                 onChange={setYoyo}
                 label="Yoyo (Reverse on repeat)"
               />
-
-              <div className="properties-divider" />
-
-              <button 
-                className="properties-button properties-button-primary"
-                onClick={handleAddKeyframe}
-              >
-                Add Keyframe
-              </button>
             </div>
           )}
         </div>

@@ -383,6 +383,7 @@ export const PropertiesPanelComprehensive = ({
   }
 
   return (
+    <>
     <div className="properties-panel">
       {/* Header with controls */}
       <div className="properties-header">
